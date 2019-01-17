@@ -21,7 +21,7 @@ destination.py 	(to destination node)
 2) ./broker.py  (./ instead of python)   (in broker node)
 3) python source.py input.txt            (in source node)
 
-### After the execution of source.py with input.txt, source will first connect broker and
+After the execution of source.py with input.txt, source will first connect broker and
 ### send the file with TCP. It can be seen from broker that source is connected (will be printed).
 ### After that Reliable Data Transfer with UDP will starts from broker to destination (server)
 ### We printed the time of data transfer from Broker to Destination for tracking purposes
