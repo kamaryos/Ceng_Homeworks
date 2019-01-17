@@ -1,5 +1,5 @@
-#### Baris Sugur 2099315
-#### Abdullah Mert Tuncay 2099422
+#### Baris Sugur 
+#### Abdullah Mert Tuncay 
 #### Group 2
 
 ### Being sure the servers are running, first run scp.py 
@@ -50,9 +50,9 @@ sudo route add -host 10.10.4.1 gw 10.10.4.2
 sudo route add -host 10.10.5.2 gw 10.10.5.1
 route -n
 
-### For tc loss, corrupt, reorder commands, run following commands in related nodes. Note that
-### these simulated data hazards are applied on a link BOTH ways. Also to change the loss or 
-### add corrupt or duplicate, just simply change the percentages below. But make sure that 
+#### For tc loss, corrupt, reorder commands, run following commands in related nodes. Note that
+#### these simulated data hazards are applied on a link BOTH ways. Also to change the loss or 
+#### add corrupt or duplicate, just simply change the percentages below. But make sure that 
 #### [INTERFACE]  (eth1,eth2,eth3) parts stays same. 
 
 ### For broker;
