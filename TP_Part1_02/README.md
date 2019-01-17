@@ -1,5 +1,5 @@
-## Baris Sugur 2099315
 ## Abdullah Mert Tuncay 2099422
+## Baris Sugur 2099315
 ## Group 2
 
 ## Being sure the servers are running, first run scp.py 
