@@ -6,11 +6,12 @@
 ## This script (scp.py), scp's all files to related nodes, edit scp.py as specified.
 ## After making ssh connections, execute scripts as follows (in the order):
 
-### 1) python destination.py                 (in destination node)
-### 2) python r2.py                          (in r2 node)
-### 3) python r1.py                          (in r1 node)
-### 4) ./broker.py  (./ instead of python)   (in broker node)
-### 5) python source.py                      (in source node)
+### 
+1) python destination.py                 (in destination node)
+2) python r2.py                          (in r2 node)
+3) python r1.py                          (in r1 node)
+4) ./broker.py  (./ instead of python)   (in broker node)
+5) python source.py                      (in source node)
 
 ## After the execution of source.py in the server node, end-to-end time(ms) will be printed.
 ## Server will keep listening until connection is closed. (Or Ctrl+Z)
