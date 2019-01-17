@@ -1,7 +1,7 @@
-###
-Abdullah Mert Tuncay
-Baris Sugur
-Group 2
+
+#### Abdullah Mert Tuncay
+#### Baris Sugur
+#### Group 2
 
 ## Being sure the servers are running, first run scp.py 
 ## This script (scp.py), scp's all files to related nodes, edit scp.py as specified.
@@ -18,9 +18,9 @@ Group 2
 ### Server will keep listening until connection is closed. (Or Ctrl+Z)
 ### Hence source.py can be executed as many times as one wants.
 
-## For tc/netem delays, execute the following command in broker,r1,r2 and destination nodes:
+### For tc/netem delays, execute the following command in broker,r1,r2 and destination nodes:
 "sudo tc qdisc change dev eth0 root netem delay Xms 5ms distribution normal" (X=wanted delay)
-## Note that this command will change the current delay with X.
+### Note that this command will change the current delay with X.
 
 ### After delay commands, rerun the script executions and observe the change in end-to-end delay.
 
