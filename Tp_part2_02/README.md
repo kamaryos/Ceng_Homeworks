@@ -21,20 +21,22 @@ destination.py 	(to destination node)
 2) ./broker.py  (./ instead of python)   (in broker node)
 3) python source.py input.txt            (in source node)
 
+###
 After the execution of source.py with input.txt, source will first connect broker and
-### send the file with TCP. It can be seen from broker that source is connected (will be printed).
-### After that Reliable Data Transfer with UDP will starts from broker to destination (server)
-### We printed the time of data transfer from Broker to Destination for tracking purposes
-### So one can track the transfer and can see how long it takes. (without any packet loss or
-### other commands, it take approximately 90 sec to transfer the data (without any data hazard)
-### so please wait 90 sec.)2 threads are used, one operated on router 1 (r1) and one operated on 
-### router 2 (r2). The individual time for the threads will also be printed, which is expected 
-### to be close to each other. The time will be printed when a thread is finished for observation.
+send the file with TCP. It can be seen from broker that source is connected (will be printed).
+After that Reliable Data Transfer with UDP will starts from broker to destination (server)
+We printed the time of data transfer from Broker to Destination for tracking purposes
+So one can track the transfer and can see how long it takes. (without any packet loss or
+other commands, it take approximately 90 sec to transfer the data (without any data hazard)
+so please wait 90 sec.)2 threads are used, one operated on router 1 (r1) and one operated on 
+router 2 (r2). The individual time for the threads will also be printed, which is expected 
+to be close to each other. The time will be printed when a thread is finished for observation.
 
-### We have already made the necessarcy configurations in the routers. But just in case there is
-### a problem, below are the commands we run in each router to pass the message forward. Or simply 
-### put them in a .sh file and scp/run them in the routers. After that related IP tables are shown.
-### We have those .sh files but did not provide them as it has been stated in the homework text.
+### 
+We have already made the necessarcy configurations in the routers. But just in case there is
+a problem, below are the commands we run in each router to pass the message forward. Or simply 
+put them in a .sh file and scp/run them in the routers. After that related IP tables are shown.
+We have those .sh files but did not provide them as it has been stated in the homework text.
 
 ### In router1;
 ###
