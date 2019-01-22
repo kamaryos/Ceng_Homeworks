@@ -1,6 +1,6 @@
 # Ceng_Homeworks
 
-## All the homeworks that I did or participated in my bachelors year in Middle East Technical University Computer Engineering Department
+## All the homeworks that I did or participated in my bachelor degree at Middle East Technical University Computer Engineering Department
 
 ### 
 These projects are done by me and my partner in these lectures. 
