@@ -16,6 +16,7 @@ struct Vec3i
 struct Vec4f
 {
     float x, y, z, w;
+    //Add Vec3 to Vec4f function
 };
 
 struct Vec4f1i
