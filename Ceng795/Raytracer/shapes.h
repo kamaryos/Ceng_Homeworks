@@ -128,6 +128,53 @@ Vec4f Sphere::hit_sphere(const ray& r, const vec3& center, float radius){ // if 
 Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const vec3& p3){
 
 
+  float x = r.direction().x;
+  float y = r.direction().y;
+  float z = r.direction().z;
+  float one = (p1.x-p2.x);
+  float ten = (p1.z-p3.z);
+  float eleven = (p1.y-p3.y);
+  float twelve = (p1.z-r.origin().z);
+  float thirteen = (p1.z-p2.z);
+  float two = (eleven*z-ten*y);
+  float three = (p1.x-p3.x);
+  float nine = (p1.y-p2.y);
+  float four = (nine*z-thirteen*y);
+  float five = (nine*ten-eleven*thirteen);
+  float six = (p1.x-r.origin().x);
+  float eight = (p1.y-r.origin().y);
+  float seven = (eight*z-twelve*y);
+
+  float det_A_inv = 1.0f / ((one*two)-(three*four)+(x*five));
+
+  float beta = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
+
+  if(beta < 0.f || beta > 1.0f)
+  {
+   Vec4f result(0,0,0,-1);
+   return result;
+  }
+
+  float gamma = ((one*seven)-(six*four)+(x*(nine*twelve-eight*thirteen))) * det_A_inv;
+
+  if( gamma < 0 || (beta+gamma > 1))
+  {
+    Vec4f result(0,0,0,-1);
+    return result;
+  }
+  else{
+    float t = ((one*(eleven*twelve-ten*eight))
+              -(three*(nine*twelve-thirteen*eight))
+              +(six*five))* det_A_inv;
+
+    Vec4f result(r.origin()+t*r.direction(),t);
+    return result;
+  }
+
+
+
+
+
 
 
 };
