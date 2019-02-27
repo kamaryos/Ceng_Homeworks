@@ -127,13 +127,19 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("PhongExponent");
         stream << child->GetText() << std::endl;
+        child = element->FirstChildElement("Transparency");
+        stream << child->GetText() << std::endl;
+        child = element->FirstChildElement("RefractionIndex");
+        stream << child->GetText() << std::endl;
+
 
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
         stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
         stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         stream >> material.phong_exponent;
-
+        stream >> material.transparency.x >> material.transparency.y >> material.transparency.z;
+        stream >> material.refraction_index;  
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
