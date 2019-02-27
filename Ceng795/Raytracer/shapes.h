@@ -47,6 +47,7 @@ struct Material
     vec3 transparency;
     float phong_exponent;
     float refraction_index;
+    
 };
 
 class Shapes{
@@ -121,7 +122,7 @@ Vec4f Sphere::hit_sphere(const ray& r, const vec3& center, float radius){ // if 
 
   //Vec3 --> Vec4f function need to be added
 
-  Vec4f result(r.origin()+t*r.direction(),t);
+  Vec4f result(r.point_at_parameter(t),t);
   return result;
 };
 
@@ -167,16 +168,9 @@ Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const
               -(three*(nine*twelve-thirteen*eight))
               +(six*five))* det_A_inv;
 
-    Vec4f result(r.origin()+t*r.direction(),t);
+    Vec4f result(r.point_at_parameter(t),t);
     return result;
   }
-
-
-
-
-
-
-
 };
 
 

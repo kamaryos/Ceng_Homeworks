@@ -20,6 +20,8 @@ struct PointLight
 {
         vec3 position;
         vec3 intensity;
+        PointLight(){}
+        PointLight(vec3 position, vec3 intensity) : position(position), intensity(intensity){}
 };
 
 
