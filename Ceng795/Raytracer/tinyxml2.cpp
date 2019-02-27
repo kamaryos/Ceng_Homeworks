@@ -754,7 +754,7 @@ XMLNode::~XMLNode()
     }
 }
 
-const char* XMLNode::Value() const 
+const char* XMLNode::Value() const
 {
     // Edge case: XMLDocuments don't have a Value. Return null.
     if ( this->ToDocument() )
@@ -1295,12 +1295,12 @@ bool XMLUnknown::Accept( XMLVisitor* visitor ) const
 
 // --------- XMLAttribute ---------- //
 
-const char* XMLAttribute::Name() const 
+const char* XMLAttribute::Name() const
 {
     return _name.GetStr();
 }
 
-const char* XMLAttribute::Value() const 
+const char* XMLAttribute::Value() const
 {
     return _value.GetStr();
 }
@@ -1487,42 +1487,42 @@ const char* XMLElement::Attribute( const char* name, const char* value ) const
     return 0;
 }
 
-int XMLElement::IntAttribute(const char* name, int defaultValue) const 
+int XMLElement::IntAttribute(const char* name, int defaultValue) const
 {
 	int i = defaultValue;
 	QueryIntAttribute(name, &i);
 	return i;
 }
 
-unsigned XMLElement::UnsignedAttribute(const char* name, unsigned defaultValue) const 
+unsigned XMLElement::UnsignedAttribute(const char* name, unsigned defaultValue) const
 {
 	unsigned i = defaultValue;
 	QueryUnsignedAttribute(name, &i);
 	return i;
 }
 
-int64_t XMLElement::Int64Attribute(const char* name, int64_t defaultValue) const 
+int64_t XMLElement::Int64Attribute(const char* name, int64_t defaultValue) const
 {
 	int64_t i = defaultValue;
 	QueryInt64Attribute(name, &i);
 	return i;
 }
 
-bool XMLElement::BoolAttribute(const char* name, bool defaultValue) const 
+bool XMLElement::BoolAttribute(const char* name, bool defaultValue) const
 {
 	bool b = defaultValue;
 	QueryBoolAttribute(name, &b);
 	return b;
 }
 
-double XMLElement::DoubleAttribute(const char* name, double defaultValue) const 
+double XMLElement::DoubleAttribute(const char* name, double defaultValue) const
 {
 	double d = defaultValue;
 	QueryDoubleAttribute(name, &d);
 	return d;
 }
 
-float XMLElement::FloatAttribute(const char* name, float defaultValue) const 
+float XMLElement::FloatAttribute(const char* name, float defaultValue) const
 {
 	float f = defaultValue;
 	QueryFloatAttribute(name, &f);
@@ -1549,7 +1549,7 @@ void	XMLElement::SetText( const char* inText )
 }
 
 
-void XMLElement::SetText( int v ) 
+void XMLElement::SetText( int v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1557,7 +1557,7 @@ void XMLElement::SetText( int v )
 }
 
 
-void XMLElement::SetText( unsigned v ) 
+void XMLElement::SetText( unsigned v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1581,7 +1581,7 @@ void XMLElement::SetText( bool v )
 }
 
 
-void XMLElement::SetText( float v ) 
+void XMLElement::SetText( float v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1589,7 +1589,7 @@ void XMLElement::SetText( float v )
 }
 
 
-void XMLElement::SetText( double v ) 
+void XMLElement::SetText( double v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1995,7 +1995,7 @@ void XMLDocument::Clear()
     _commentPool.Trace( "comment" );
     _attributePool.Trace( "attribute" );
 #endif
-    
+
 #ifdef DEBUG
     if ( !hadError ) {
         TIXMLASSERT( _elementPool.CurrentAllocs()   == _elementPool.Untracked() );
@@ -2061,7 +2061,7 @@ static FILE* callfopen( const char* filepath, const char* mode )
 #endif
     return fp;
 }
-    
+
 void XMLDocument::DeleteNode( XMLNode* node )	{
     TIXMLASSERT( node );
     TIXMLASSERT(node->_document == this );
@@ -2233,7 +2233,7 @@ void XMLDocument::SetError( XMLError error, const char* str1, const char* str2, 
 {
     TIXMLASSERT( error >= 0 && error < XML_ERROR_COUNT );
     _errorID = error;
-	
+
 	_errorStr1.Reset();
 	_errorStr2.Reset();
     _errorLineNum = lineNum;
@@ -2672,4 +2672,3 @@ bool XMLPrinter::Visit( const XMLUnknown& unknown )
 }
 
 }   // namespace tinyxml2
-

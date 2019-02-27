@@ -1,10 +1,12 @@
 #ifndef CAMERAH
 #define CAMERAH
-#include "vec3.h"
+#include "vec.h"
+#include "parser.h"
+#include "shapes.h"
 
-class Camera
+
+struct Camera
 {
-public:
         vec3 position;
         vec3 gaze;
         vec3 up;
@@ -12,14 +14,14 @@ public:
         float near_distance;
         int image_width, image_height;
         std::string image_name;
-        
+
 };
 
-class PointLight
+struct PointLight
 {
-public:
         vec3 position;
         vec3 intensity;
 };
+
 
 #endif

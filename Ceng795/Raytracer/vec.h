@@ -1,29 +1,10 @@
-#ifndef VEC3H
-#define VEC3H
+#ifndef VECH
+#define VECH
 
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
-
-
-
-struct Vec3i
-{
-    int x, y, z;
-};
-
-struct Vec4f
-{
-    float x, y, z, w;
-    //Add Vec3 to Vec4f function
-};
-
-struct Vec4f1i
-{
-    float x, y, z, w;
-    int i;
-};
 
 class vec3{
 public:
