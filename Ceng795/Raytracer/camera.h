@@ -1,7 +1,6 @@
 #ifndef CAMERAH
 #define CAMERAH
 #include "vec.h"
-#include "parser.h"
 #include "shapes.h"
 
 
