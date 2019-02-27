@@ -271,7 +271,7 @@ namespace rayeq
               result = vecop::multiplyVec3f(scene.ambient_light, scene.materials[object.material_id-1].ambient);
               for(auto p_light : scene.point_lights){
                   if(is_object_between(intersection_point, p_light.position, scene) == true){
-                      break;
+                      continue;
                   }
                   else {
                       parser::Vec3f diffuse = diffuse_of_point(p_light.position, p_light.intensity, normal, scene.materials[object.material_id-1].diffuse, intersection_point);
@@ -290,7 +290,7 @@ namespace rayeq
               result = vecop::multiplyVec3f(scene.ambient_light, scene.materials[object.material_id-1].ambient);
               for(auto p_light : scene.point_lights){
                   if(is_object_between(intersection_point, p_light.position, scene) == true){
-                      break;
+                      continue;
                   }
                   else {
                       parser::Vec3f diffuse = diffuse_of_point(p_light.position, p_light.intensity, normal, scene.materials[object.material_id-1].diffuse, intersection_point);
