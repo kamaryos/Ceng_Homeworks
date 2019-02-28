@@ -44,10 +44,10 @@ struct Face
     vec3 v1_vector;
     vec3 v2_vector;
 
-    vec3 normal;
+    vec3 normal = unit_vector(cross(v1_vector-v0_vector,v2_vector-v0_vector));
 
     Face() {}
-    Face(vec3 v0, vec3 v1, vec3 v2, vec3 normal): v0_vector(v0),v1_vector(v1),v2_vector(v2),normal(unit_vector(cross(v1-v0,v2-v0))){}
+    Face(vec3 v0, vec3 v1, vec3 v2, vec3 normal): v0_vector(v0),v1_vector(v1),v2_vector(v2),normal(normal){}
 };
 
 
