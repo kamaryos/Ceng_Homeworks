@@ -40,9 +40,14 @@ struct Face
     int v1_id;
     int v2_id;
 
+    vec3 v0_vector;
+    vec3 v1_vector;
+    vec3 v2_vector;
+
     vec3 normal;
+
     Face() {}
-    Face(int v0, int v1, int v2, vec3 normal): v0_id(v0),v1_id(v1),v2_id(v2),normal(normal){}
+    Face(vec3 v0, vec3 v1, vec3 v2, vec3 normal): v0_vector(v0),v1_vector(v1),v2_vector(v2),normal(unit_vector(cross(v1-v0,v2-v0))){}
 };
 
 
@@ -84,9 +89,9 @@ public:
   Face indices;
   Triangle(){}
   Triangle(int material_id, Face indices) : material_id(material_id){
-    indices = Face(indices.v0_id,indices.v1_id,indices.v2_id,indices.normal);
+    indices = Face(indices.v0_vector,indices.v1_vector,indices.v2_vector,indices.normal);
     }
-  Vec4f hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const vec3& p3);
+  Vec4f hit_triangle(const ray& r, const Triangle& triangle);
 };
 
 class Mesh : public Triangle {
@@ -97,7 +102,7 @@ public:
   float shadow_ray_epsilon;
   Mesh(){}
   Mesh(std::vector<Face> faces, float shadow_ray_epsilon): faces(faces),shadow_ray_epsilon(shadow_ray_epsilon){} // Is this possible and the class architecture is ok or not!?
-  Vec4f1i hit_mesh(const Mesh& mesh, const std::vector<vec3> &vertex_data, const ray& r);
+  Vec4f1i hit_mesh(const Mesh& mesh, const ray& r);
 };
 
 void t_min(float t, float t1, float t2){
@@ -137,11 +142,14 @@ Vec4f Sphere::hit_sphere(const ray& r, const Sphere& sphere){ // if ray intersec
   return result;
 };
 
-Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const vec3& p3){
+Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 
   float x = r.direction().x;
   float y = r.direction().y;
   float z = r.direction().z;
+  vec3 p1 = triangle.indices.v0_vector;
+  vec3 p2 = triangle.indices.v1_vector;
+  vec3 p3 = triangle.indices.v2_vector;
   float one = (p1.x-p2.x);
   float ten = (p1.z-p3.z);
   float eleven = (p1.y-p3.y);
@@ -184,12 +192,12 @@ Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const
 };
 
 
-Vec4f1i Mesh::hit_mesh(const Mesh& mesh, const std::vector<vec3> &vertex_data, const ray& r){
+Vec4f1i Mesh::hit_mesh(const Mesh& mesh, const ray& r){
     int size_mesh = mesh.faces.size();
     Vec4f1i result(0,0,0,-1,0);
 
     for(int i = 0 ; i < size_mesh ; i++){
-        Vec4f temp = Triangle::hit_triangle(r,vertex_data[mesh.faces[i].v0_id-1],vertex_data[mesh.faces[i].v1_id-1],vertex_data[mesh.faces[i].v2_id-1]);
+        Vec4f temp = Triangle::hit_triangle(r,Triangle(mesh.material_id,mesh.faces[i]));
         if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
             result = Vec4f1i(temp,i);
         }

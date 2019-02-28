@@ -171,9 +171,11 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         while (!(stream >> face.v0_id).eof())
         {
             stream >> face.v1_id >> face.v2_id;
-            vec3 v1 = vertex_data[face.v1_id - 1] - vertex_data[face.v0_id - 1];
-            vec3 v2 = vertex_data[face.v2_id - 1] - vertex_data[face.v0_id - 1];
-            face.normal =  unit_vector(cross(v1,v2));
+            face.v0_vector = vertex_data[face.v0_id - 1];
+            face.v1_vector = vertex_data[face.v1_id - 1];
+            face.v2_vector = vertex_data[face.v2_id - 1];
+
+            //face.normal =  unit_vector(cross(v1,v2));
             mesh.faces.push_back(face);
         }
         stream.clear();
@@ -197,6 +199,10 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         child = element->FirstChildElement("Indices");
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
+
+        triangle.indices.v0_vector = vertex_data[triangle.indices.v0_id - 1];
+        triangle.indices.v1_vector = vertex_data[triangle.indices.v1_id - 1];
+        triangle.indices.v2_vector = vertex_data[triangle.indices.v2_id - 1];
 
         triangles.push_back(triangle);
         element = element->NextSiblingElement("Triangle");
