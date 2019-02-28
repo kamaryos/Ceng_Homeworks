@@ -5,6 +5,10 @@
 #include "ray.h"
 
 
+    //TODO:
+    //Change the face property into vec3 positions then match them in the parser
+    //Change the Triangle and Mesh structure
+
 struct Vec3i
 {
     int x, y, z;
@@ -24,6 +28,9 @@ struct Vec4f1i
 {
     float x, y, z, w;
     int i;
+    Vec4f1i();
+    Vec4f1i(float x, float y, float z, float w, int i) : x(x), y(y), z(z), w(w), i(i) {}
+    Vec4f1i(Vec4f vec4, int i) : x(vec4.x),y(vec4.y),z(vec4.z),i(i){}
 };
 
 
@@ -32,8 +39,10 @@ struct Face
     int v0_id;
     int v1_id;
     int v2_id;
+
+    vec3 normal;
     Face() {}
-    Face(int v0, int v1, int v2): v0_id(v0),v1_id(v1),v2_id(v2){}
+    Face(int v0, int v1, int v2, vec3 normal): v0_id(v0),v1_id(v1),v2_id(v2),normal(normal){}
 };
 
 
@@ -47,7 +56,7 @@ struct Material
     vec3 transparency;
     float phong_exponent;
     float refraction_index;
-    
+
 };
 
 class Shapes{
@@ -60,11 +69,12 @@ class Sphere : public Shapes{
 public:
   int object_type = 1;
   int center_vertex_id;
+  vec3 center;
   int material_id;
   float radius;
   Sphere(){}
-  Sphere(int material_id, int center_vertex_id, float radius) : material_id(material_id), center_vertex_id(center_vertex_id), radius(radius) {}
-  Vec4f hit_sphere(const ray& r, const vec3& center, float radius);
+  Sphere(int material_id, vec3 center, float radius) : material_id(material_id), center(center), radius(radius) {}
+  Vec4f hit_sphere(const ray& r, const Sphere& sphere);
 };
 
 class Triangle : public Shapes{
@@ -74,19 +84,20 @@ public:
   Face indices;
   Triangle(){}
   Triangle(int material_id, Face indices) : material_id(material_id){
-    indices = Face(indices.v0_id,indices.v1_id,indices.v2_id);
+    indices = Face(indices.v0_id,indices.v1_id,indices.v2_id,indices.normal);
     }
   Vec4f hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const vec3& p3);
 };
 
-class Mesh : public Shapes{
+class Mesh : public Triangle {
 public:
   int object_type = 3;
   int material_id;
   std::vector<Face> faces;
+  float shadow_ray_epsilon;
   Mesh(){}
-  Mesh(std::vector<Face> faces): faces(faces){} // Is this possible and the class architecture is ok or not!?
-
+  Mesh(std::vector<Face> faces, float shadow_ray_epsilon): faces(faces),shadow_ray_epsilon(shadow_ray_epsilon){} // Is this possible and the class architecture is ok or not!?
+  Vec4f1i hit_mesh(const Mesh& mesh, const std::vector<vec3> &vertex_data, const ray& r);
 };
 
 void t_min(float t, float t1, float t2){
@@ -96,13 +107,13 @@ void t_min(float t, float t1, float t2){
 };
 
 
-Vec4f Sphere::hit_sphere(const ray& r, const vec3& center, float radius){ // if ray intersects, return intersection point, if not 0,0,0,-1
+Vec4f Sphere::hit_sphere(const ray& r, const Sphere& sphere){ // if ray intersects, return intersection point, if not 0,0,0,-1
 
   vec3 oc = (r.origin() - center);
 
   float a = dot(r.direction(),r.direction());
-  float b = 2*dot(r.direction(),(r.direction() - center));
-  float c = dot(oc,oc) - (radius * radius);
+  float b = 2*dot(r.direction(),(r.direction() - sphere.center));
+  float c = dot(oc,oc) - (sphere.radius * sphere.radius);
 
   float delta = (b*b) - (4*a*c);
   float t = 0;
@@ -127,7 +138,6 @@ Vec4f Sphere::hit_sphere(const ray& r, const vec3& center, float radius){ // if 
 };
 
 Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const vec3& p3){
-
 
   float x = r.direction().x;
   float y = r.direction().y;
@@ -173,6 +183,19 @@ Vec4f Triangle::hit_triangle(const ray& r, const vec3& p1, const vec3& p2, const
   }
 };
 
+
+Vec4f1i Mesh::hit_mesh(const Mesh& mesh, const std::vector<vec3> &vertex_data, const ray& r){
+    int size_mesh = mesh.faces.size();
+    Vec4f1i result(0,0,0,-1,0);
+
+    for(int i = 0 ; i < size_mesh ; i++){
+        Vec4f temp = Triangle::hit_triangle(r,vertex_data[mesh.faces[i].v0_id-1],vertex_data[mesh.faces[i].v1_id-1],vertex_data[mesh.faces[i].v2_id-1]);
+        if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
+            result = Vec4f1i(temp,i);
+        }
+    }
+    return result;
+};
 
 
 

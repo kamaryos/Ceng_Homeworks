@@ -139,7 +139,7 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         stream >> material.phong_exponent;
         stream >> material.transparency.x >> material.transparency.y >> material.transparency.z;
-        stream >> material.refraction_index;  
+        stream >> material.refraction_index;
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
@@ -171,6 +171,9 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         while (!(stream >> face.v0_id).eof())
         {
             stream >> face.v1_id >> face.v2_id;
+            vec3 v1 = vertex_data[face.v1_id - 1] - vertex_data[face.v0_id - 1];
+            vec3 v2 = vertex_data[face.v2_id - 1] - vertex_data[face.v0_id - 1];
+            face.normal =  unit_vector(cross(v1,v2));
             mesh.faces.push_back(face);
         }
         stream.clear();
@@ -212,6 +215,7 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         child = element->FirstChildElement("Center");
         stream << child->GetText() << std::endl;
         stream >> sphere.center_vertex_id;
+        sphere.center = vertex_data[sphere.center_vertex_id-1];
 
         child = element->FirstChildElement("Radius");
         stream << child->GetText() << std::endl;
