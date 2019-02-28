@@ -15,5 +15,4 @@ An example usage is shown below:
 
     ./main hw1_sample_scenes/simple.xml test_pattern.ppm
 
-You can use all or parts of the source code files in this folder
-when implementing your homeworks.
+
