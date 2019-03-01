@@ -117,6 +117,11 @@ void parser::Scene::loadFromXml(const std::string& filepath)
     Material material;
     while (element)
     {
+        bool mr = false;
+        bool pe = false;
+        bool tr = false;
+        bool ri = false;
+
         child = element->FirstChildElement("AmbientReflectance");
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("DiffuseReflectance");
@@ -124,22 +129,22 @@ void parser::Scene::loadFromXml(const std::string& filepath)
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("MirrorReflectance");
-        stream << child->GetText() << std::endl;
+        if(child != NULL) { mr = true; stream << child->GetText() << std::endl;}
         child = element->FirstChildElement("PhongExponent");
-        stream << child->GetText() << std::endl;
+        if(child != NULL) { pe = true; stream << child->GetText() << std::endl;}
         child = element->FirstChildElement("Transparency");
-        stream << child->GetText() << std::endl;
+        if(child != NULL) { tr = true; stream << child->GetText() << std::endl;}
         child = element->FirstChildElement("RefractionIndex");
-        stream << child->GetText() << std::endl;
+        if(child != NULL) { ri = true; stream << child->GetText() << std::endl;}
 
 
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
         stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
-        stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
-        stream >> material.phong_exponent;
-        stream >> material.transparency.x >> material.transparency.y >> material.transparency.z;
-        stream >> material.refraction_index;
+        if(mr == true) {stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;}
+        if(pe == true) {stream >> material.phong_exponent;}
+        if(tr == true) {stream >> material.transparency.x >> material.transparency.y >> material.transparency.z;}
+        if(ri == true) {stream >> material.refraction_index;}
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
@@ -179,7 +184,7 @@ void parser::Scene::loadFromXml(const std::string& filepath)
             mesh.faces.push_back(face);
         }
         stream.clear();
-
+        mesh.shadow_ray_epsilon = shadow_ray_epsilon;
         meshes.push_back(mesh);
         mesh.faces.clear();
         element = element->NextSiblingElement("Mesh");
