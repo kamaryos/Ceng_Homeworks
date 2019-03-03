@@ -44,7 +44,6 @@ public:
   float radius;
   Sphere(){}
   Sphere(int material_id, vec3 center, float radius) : material_id(material_id), center(center), radius(radius) {}
-  static bool hit_sphere_bool(const ray& r, const Sphere& sphere);
   static Vec4f hit_sphere(const ray& r, const Sphere& sphere);
 };
 
@@ -57,7 +56,6 @@ public:
   Triangle(int material_id, Face indices) : material_id(material_id){
     indices = Face(indices.v0_vector,indices.v1_vector,indices.v2_vector);
     }
-  static bool hit_triangle_bool(const ray& r, const Triangle& triangle);
   static Vec4f hit_triangle(const ray& r, const Triangle& triangle);
 };
 
@@ -69,7 +67,7 @@ public:
   float shadow_ray_epsilon;
   Mesh(){}
   Mesh(std::vector<Face> faces, float shadow_ray_epsilon): faces(faces),shadow_ray_epsilon(shadow_ray_epsilon){} // Is this possible and the class architecture is ok or not!?
-  static bool hit_mesh_bool(const ray& r, const Mesh& mesh);
+
   static Vec4f1i hit_mesh(const ray& r, const Mesh& mesh);
 };
 
@@ -81,6 +79,6 @@ public:
   Triangle triangle;
 };
 
-bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const std::vector<Mesh>& meshes, const std::vector<Triangle>& triangles, const std::vector<Sphere>& spheres);
+bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const std::vector<Mesh>& meshes, const std::vector<Triangle>& triangles, const std::vector<Sphere>& spheres,const float& sre );
 
 #endif

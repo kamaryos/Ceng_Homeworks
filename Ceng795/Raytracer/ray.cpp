@@ -62,7 +62,7 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           if(object.object_type == 1){
               //const Sphere* sphere  = static_cast<const Sphere*>(object);
               normal = unit_vector(intersection_point - object.sphere.center); // Normal vector of intersection point (for spheres)
-
+              
           }
           else if(object.object_type == 2){
               //const Triangle* triangle = static_cast<const Triangle*>(object);
@@ -72,7 +72,7 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           if(max_recursion_depth==0){ // Not> reflectance.
               result = (scene.ambient_light * scene.materials[object.material_id-1].ambient);
               for(auto p_light : scene.point_lights){
-                  if(is_object_between(intersection_point, p_light.position, scene.meshes, scene.triangles, scene.spheres) == true){
+                  if(is_object_between(intersection_point, p_light.position, scene.meshes, scene.triangles, scene.spheres,scene.shadow_ray_epsilon) == true){
                       continue;
                   }
                   else {
@@ -85,15 +85,17 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           }
 
           else if(max_recursion_depth>0){ // Hit and reflect.
+
+
               result = (scene.ambient_light * scene.materials[object.material_id-1].ambient);
+
               for(auto p_light : scene.point_lights){
-                  if(is_object_between(intersection_point, p_light.position, scene.meshes, scene.triangles, scene.spheres) == true){
+                  if(is_object_between(intersection_point, p_light.position, scene.meshes, scene.triangles, scene.spheres,scene.shadow_ray_epsilon) == true){
                       continue;
                   }
                   else {
                       vec3 diffuse = PointLight::diffuse_shading(p_light, normal, scene.materials[object.material_id-1].diffuse, intersection_point);
                       vec3 specular = PointLight::specular_shading(p_light, normal, scene.materials[object.material_id-1].specular, intersection_point, r.origin(), scene.materials[object.material_id-1].phong_exponent);
-
                       result += diffuse + specular;
                   }
               }
