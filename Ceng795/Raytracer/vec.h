@@ -6,6 +6,9 @@
 #include <iostream>
 #include <fstream>
 
+
+
+
 class vec3{
 public:
   float x,y,z;
@@ -31,6 +34,39 @@ public:
   inline void make_unit_vector();
 
 };
+
+
+
+struct Vec3i
+{
+    int x, y, z;
+    Vec3i(){}
+    Vec3i(int x, int y, int z) : x(x),y(y),z(z){}
+    Vec3i(vec3 v) : x(llround(v.x)),y(llround(v.y)),z(llround(v.z)){}
+};
+
+struct Vec4f
+{
+
+    // //Add Vec3 to Vec4f function
+    Vec4f(){}
+    Vec4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+    Vec4f(vec3 vec, float w) : x(vec.x), y(vec.y) , z(vec.z), w(w) {}
+    float x, y, z, w;
+};
+
+struct Vec4f1i
+{
+    float x, y, z, w;
+    int i;
+    Vec4f1i();
+    Vec4f1i(float x, float y, float z, float w, int i) : x(x), y(y), z(z), w(w), i(i) {}
+    Vec4f1i(Vec4f vec4, int i) : x(vec4.x),y(vec4.y),z(vec4.z),i(i){}
+};
+
+
+
+
 
 inline std::istream& operator>>(std::istream &is, vec3 &t) {
   is >> t.x >> t.y >> t.z ;
