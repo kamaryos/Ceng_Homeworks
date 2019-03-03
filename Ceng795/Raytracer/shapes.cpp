@@ -186,16 +186,16 @@ bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const
     ray r(ray_origin,light_position-ray_origin);
 
     for(int s=0; s < number_of_spheres; s++){ // Check intersections with spheres.
-        bool temp = Sphere::hit_sphere_bool(r,spheres[s]);
-        if(temp){return true;}
+        Vec4f temp = Sphere::hit_sphere(r,spheres[s]);
+        if((temp.w > sre) && (temp.w < 1)){return true;}
     }
     for(int t=0; t<number_of_triangles; t++){ // // Check intersections with triangles.
-        bool temp = Triangle::hit_triangle_bool(r,triangles[t]);
-        if(temp){return true;}
+        Vec4f temp = Triangle::hit_triangle(r,triangles[t]);
+        if((temp.w > sre) && (temp.w < 1)){return true;}
     }
     for(int m=0; m<number_of_meshes; m++){ // Check intersections with meshes.
-        bool temp = Mesh::hit_mesh_bool(r,meshes[m]);
-        if(temp){return true;}
+        Vec4f1i temp = Mesh::hit_mesh(r,meshes[m]);
+        if((temp.w > sre) && (temp.w < 1)){return true;}
     }
     return false;
 };

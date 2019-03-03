@@ -3,6 +3,9 @@
 #include "shapes.h"
 #include "parser.h"
 
+//TODO: Sphere intersection is wrong!!
+//Only triangle intersection is working
+
 vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth){
       vec3 result;
       int number_of_spheres = scene.spheres.size();
@@ -20,6 +23,8 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               object.object_type = 1;
               object.material_id = scene.spheres[j].material_id;
               object.sphere = scene.spheres[j];
+              std::cout<<"Sphere intersected!"<<std::endl;
+
           }
       }
 
@@ -43,6 +48,7 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               Triangle triangle1(scene.meshes[m].material_id,scene.meshes[m].faces[temp.i]); // Mesh
               object.object_type = 2;
               object.triangle = triangle1;
+              std::cout<<"Mesh intersected!"<<std::endl;
           }
       }
 
@@ -51,13 +57,16 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           intersection_point.y = intersection_point_4.y;
           intersection_point.z = intersection_point_4.z;
           vec3 normal;
+
+          std::cout<<object.object_type<< std::endl;
           if(object.object_type == 1){
               //const Sphere* sphere  = static_cast<const Sphere*>(object);
               normal = unit_vector(intersection_point - object.sphere.center); // Normal vector of intersection point (for spheres)
+
           }
           else if(object.object_type == 2){
               //const Triangle* triangle = static_cast<const Triangle*>(object);
-              normal = object.triangle.indices.normal;
+              normal = object.triangle.indices.normal();
           }
 
           if(max_recursion_depth==0){ // Not> reflectance.
@@ -69,8 +78,7 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
                   else {
                       vec3 diffuse = PointLight::diffuse_shading(p_light, normal, scene.materials[object.material_id-1].diffuse, intersection_point);
                       vec3 specular = PointLight::specular_shading(p_light, normal, scene.materials[object.material_id-1].specular, intersection_point, r.origin(), scene.materials[object.material_id-1].phong_exponent);
-                      // result += diffuse + specular ;
-                      result = vec3(0,0,0);
+                      result += diffuse + specular ;
                   }
               }
               return result;
@@ -85,11 +93,11 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
                   else {
                       vec3 diffuse = PointLight::diffuse_shading(p_light, normal, scene.materials[object.material_id-1].diffuse, intersection_point);
                       vec3 specular = PointLight::specular_shading(p_light, normal, scene.materials[object.material_id-1].specular, intersection_point, r.origin(), scene.materials[object.material_id-1].phong_exponent);
-                      // result += diffuse + specular;
-                      result = vec3(0,0,0);
+
+                      result += diffuse + specular;
                   }
               }
-              vec3 ray_direction_normalized = (r.direction() * (r.direction().length()));
+              vec3 ray_direction_normalized = (r.direction() / (r.direction().length()));
               float temp = dot(normal,(-1)*(ray_direction_normalized));
               vec3 new_ray_direction = (ray_direction_normalized + 2*temp*normal);
               return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].mirror);

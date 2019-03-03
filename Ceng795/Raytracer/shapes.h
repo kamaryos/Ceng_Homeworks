@@ -19,11 +19,13 @@ struct Face
     vec3 v1_vector;
     vec3 v2_vector;
 
-    vec3 normal = unit_vector(cross(v1_vector-v0_vector,v2_vector-v0_vector));
 
     Face() {}
     Face(vec3 v0, vec3 v1, vec3 v2): v0_vector(v0),v1_vector(v1),v2_vector(v2){}
-    Face(vec3 v0, vec3 v1, vec3 v2, vec3 normal): v0_vector(v0),v1_vector(v1),v2_vector(v2),normal(normal){}
+
+    inline vec3 normal() const {
+      return unit_vector(cross(v1_vector-v0_vector,v2_vector-v0_vector));
+    }
 };
 
 
@@ -53,7 +55,7 @@ public:
   Face indices;
   Triangle(){}
   Triangle(int material_id, Face indices) : material_id(material_id){
-    indices = Face(indices.v0_vector,indices.v1_vector,indices.v2_vector,indices.normal);
+    indices = Face(indices.v0_vector,indices.v1_vector,indices.v2_vector);
     }
   static bool hit_triangle_bool(const ray& r, const Triangle& triangle);
   static Vec4f hit_triangle(const ray& r, const Triangle& triangle);
