@@ -23,7 +23,6 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               object.object_type = 1;
               object.material_id = scene.spheres[j].material_id;
               object.sphere = scene.spheres[j];
-              std::cout<<"Sphere intersected!"<<std::endl;
 
           }
       }
@@ -62,7 +61,7 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           if(object.object_type == 1){
               //const Sphere* sphere  = static_cast<const Sphere*>(object);
               normal = unit_vector(intersection_point - object.sphere.center); // Normal vector of intersection point (for spheres)
-              
+
           }
           else if(object.object_type == 2){
               //const Triangle* triangle = static_cast<const Triangle*>(object);
