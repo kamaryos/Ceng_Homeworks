@@ -47,7 +47,6 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               Triangle triangle1(scene.meshes[m].material_id,scene.meshes[m].faces[temp.i]); // Mesh
               object.object_type = 2;
               object.triangle = triangle1;
-              std::cout<<"Mesh intersected!"<<std::endl;
           }
       }
 
@@ -57,7 +56,6 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           intersection_point.z = intersection_point_4.z;
           vec3 normal;
 
-          std::cout<<object.object_type<< std::endl;
           if(object.object_type == 1){
               //const Sphere* sphere  = static_cast<const Sphere*>(object);
               normal = unit_vector(intersection_point - object.sphere.center); // Normal vector of intersection point (for spheres)

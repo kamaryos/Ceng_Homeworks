@@ -41,7 +41,7 @@ void initialize(const std::string& filepath){
             vec3 ray_direction = current_pixel - camera.position;
 						ray r(ray_origin,ray_direction);
 
-            Vec3i shading_int(ray::generate_ray(r,scene,1));
+            Vec3i shading_int(ray::generate_ray(r,scene,scene.max_recursion_depth));
 
             if(shading_int.x > 255){image[((3*i)*w) + (3*k)] = 255;}
             else{image[((3*i)*w) + (3*k)] = shading_int.x;}
