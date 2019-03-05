@@ -198,13 +198,14 @@ public:
           child = element->FirstChildElement("Faces");
           stream << child->GetText() << std::endl;
           Face face;
-          int v0_id;int v1_id;int v2_id;
+	  int v0_id;int v1_id;int v2_id; 
           while (!(stream >> v0_id).eof())
           {
               stream >> v1_id >> v2_id;
-              face.v0 = vertex_data[v0_id - 1];
-              face.v1 = vertex_data[v1_id - 1];
-              face.v2 = vertex_data[v2_id - 1];
+              face.v0_vector = vertex_data[v0_id - 1];
+              face.v1_vector = vertex_data[v1_id - 1];
+              face.v2_vector = vertex_data[v2_id - 1];
+
               //face.normal =  unit_vector(cross(v1,v2));
               mesh.faces.push_back(face);
           }
@@ -228,12 +229,12 @@ public:
 
           child = element->FirstChildElement("Indices");
           stream << child->GetText() << std::endl;
-          int v0_id;int v1_id;int v2_id;
+	  int v0_id;int v1_id;int v2_id; 
           stream >> v0_id >> v1_id >> v2_id;
 
-          triangle.indices.v0 = vertex_data[v0_id - 1];
-          triangle.indices.v1 = vertex_data[v1_id - 1];
-          triangle.indices.v2 = vertex_data[v2_id - 1];
+          triangle.indices.v0_vector = vertex_data[v0_id - 1];
+          triangle.indices.v1_vector = vertex_data[v1_id - 1];
+          triangle.indices.v2_vector = vertex_data[v2_id - 1];
 
           triangles.push_back(triangle);
           element = element->NextSiblingElement("Triangle");

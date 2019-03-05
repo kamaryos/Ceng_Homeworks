@@ -3,8 +3,8 @@
 #include "shapes.h"
 #include "parser.h"
 
-//TODO: Sphere intersection is wrong!!
-//Only triangle intersection is working
+//TODO: Mesh intersection is wrong!!
+//Sphere and triangle intersection is working
 
 vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth){
       vec3 result;
@@ -44,9 +44,12 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               intersection_point_4.y = temp.y;
               intersection_point_4.z = temp.z;
               intersection_point_4.w = temp.w;
+
               Triangle triangle1(scene.meshes[m].material_id,scene.meshes[m].faces[temp.i]); // Mesh
-              object.object_type = 2;
+              object.object_type = 3;
+	      object.material_id = scene.meshes[m].material_id;
               object.triangle = triangle1;
+
           }
       }
 
@@ -55,18 +58,16 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
           intersection_point.y = intersection_point_4.y;
           intersection_point.z = intersection_point_4.z;
           vec3 normal;
-
           if(object.object_type == 1){
               //const Sphere* sphere  = static_cast<const Sphere*>(object);
               normal = unit_vector(intersection_point - object.sphere.center); // Normal vector of intersection point (for spheres)
-
           }
-          else if(object.object_type == 2){
+          else if(object.object_type == 2 || object.object_type == 3){
               //const Triangle* triangle = static_cast<const Triangle*>(object);
               normal = object.triangle.indices.normal();
           }
 
-          if(max_recursion_depth==0){ // Not> reflectance.
+          if(max_recursion_depth==0){ // Not reflectance.
               result = (scene.ambient_light * scene.materials[object.material_id-1].ambient);
               for(auto p_light : scene.point_lights){
                   if(is_object_between(intersection_point, p_light.position, scene.meshes, scene.triangles, scene.spheres,scene.shadow_ray_epsilon) == true){

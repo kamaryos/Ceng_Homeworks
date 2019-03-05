@@ -47,12 +47,12 @@ struct Vec3i
 
 struct Vec4f
 {
-
     float x, y, z, w;
+    // //Add Vec3 to Vec4f function
     Vec4f(){}
     Vec4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
     Vec4f(vec3 vec, float w) : x(vec.x), y(vec.y) , z(vec.z), w(w) {}
-
+    
 };
 
 struct Vec4f1i
@@ -75,6 +75,14 @@ inline std::istream& operator>>(std::istream &is, vec3 &t) {
 
 inline std::ostream& operator<<(std::ostream &os, const vec3 &t) {
   os << t.x << " " << t.y << " " << t.z ;
+  return os;
+}
+inline std::ostream& operator<<(std::ostream &os, const Vec4f &t) {
+  os << t.x << " " << t.y << " " << t.z << " " << t.w ;
+  return os;
+}
+inline std::ostream& operator<<(std::ostream &os, const Vec4f1i &t) {
+  os << t.x << " " << t.y << " " << t.z << " " << t.w << " " << t.i;
   return os;
 }
 

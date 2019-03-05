@@ -36,9 +36,11 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
   float x = r.direction().x;
   float y = r.direction().y;
   float z = r.direction().z;
-  vec3 p1 = triangle.indices.v0;
-  vec3 p2 = triangle.indices.v1;
-  vec3 p3 = triangle.indices.v2;
+	
+
+  vec3 p1 = triangle.indices.v0_vector;
+  vec3 p2 = triangle.indices.v1_vector;
+  vec3 p3 = triangle.indices.v2_vector;
   float one = (p1.x-p2.x);
   float ten = (p1.z-p3.z);
   float eleven = (p1.y-p3.y);
@@ -53,42 +55,48 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
   float eight = (p1.y-r.origin().y);
   float seven = (eight*z-twelve*y);
 
-  float det_A = (one*two)-(three*four)+(x*five);
+	
+
+  float det_A((one*two)-(three*four)+(x*five));
+//Seg fault in this line!! check
   float det_A_inv = 1.0f / det_A;
-  float beta  = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
+	
 
+  float beta = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
 
-  if(beta < 0.f || beta > 1.0f)
+  if(beta < 0.f || beta > 1.0f )
   {
-   return Vec4f(0,0,0,-1);
+   return Vec4f(0,0,0,-1.0f);
   }
 
   float gamma = ((one*seven)-(six*four)+(x*(nine*twelve-eight*thirteen))) * det_A_inv;
 
-  if( gamma < 0 || (beta+gamma > 1))
+  if( gamma < 0.f || (beta+gamma > 1.0f))
   {
-    return Vec4f(0,0,0,-1);
+    return Vec4f(0,0,0,-1.0f);
   }
-  else{
-    float t = ((one*(eleven*twelve-ten*eight))
+
+  float t = ((one*(eleven*twelve-ten*eight))
               -(three*(nine*twelve-thirteen*eight))
               +(six*five))* det_A_inv;
 
-    return Vec4f(r.point_at_parameter(t),t);
-  }
+  return Vec4f(r.point_at_parameter(t),t);
+
 };
 
 Vec4f1i Mesh::hit_mesh(const ray& r, const Mesh& mesh){
     int size_mesh = mesh.faces.size();
-    Vec4f1i result(0,0,0,-1,0);
+    Vec4f1i result(0,0,0,-1.0f,0);
 
     for(int i = 0 ; i < size_mesh ; i++){
-
-        Vec4f temp = Triangle::hit_triangle(r,Triangle(mesh.material_id,mesh.faces[i]));
-        if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
+	Face face = mesh.faces[i];
+        Vec4f temp = Triangle::hit_triangle(r,Triangle(mesh.material_id,face.v0_vector,face.v1_vector,face.v2_vector));
+		
+		if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
             result = Vec4f1i(temp,i);
         }
     }
+
     return result;
 };
 
@@ -97,6 +105,7 @@ bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const
     int number_of_spheres = spheres.size();
     int number_of_triangles = triangles.size();
     int number_of_meshes = meshes.size();
+
     //ProfileScope scope("is_object_between");
 
     ray r(ray_origin,light_position-ray_origin);
@@ -113,5 +122,6 @@ bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const
         Vec4f1i temp = Mesh::hit_mesh(r,meshes[m]);
         if((temp.w > sre) && (temp.w < 1)){return true;}
     }
+
     return false;
 };
