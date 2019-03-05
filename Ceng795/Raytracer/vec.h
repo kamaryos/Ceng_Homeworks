@@ -48,11 +48,11 @@ struct Vec3i
 struct Vec4f
 {
 
-    // //Add Vec3 to Vec4f function
+    float x, y, z, w;
     Vec4f(){}
     Vec4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
     Vec4f(vec3 vec, float w) : x(vec.x), y(vec.y) , z(vec.z), w(w) {}
-    float x, y, z, w;
+
 };
 
 struct Vec4f1i
@@ -61,7 +61,7 @@ struct Vec4f1i
     int i;
     Vec4f1i();
     Vec4f1i(float x, float y, float z, float w, int i) : x(x), y(y), z(z), w(w), i(i) {}
-    Vec4f1i(Vec4f vec4, int i) : x(vec4.x),y(vec4.y),z(vec4.z),i(i){}
+    Vec4f1i(Vec4f vec4, int i) : x(vec4.x),y(vec4.y),z(vec4.z),w(vec4.w),i(i){}
 };
 
 

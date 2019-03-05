@@ -11,31 +11,19 @@ class ray;
 
 struct Face
 {
-    int v0_id;
-    int v1_id;
-    int v2_id;
-
-    vec3 v0_vector;
-    vec3 v1_vector;
-    vec3 v2_vector;
-
+    vec3 v0;
+    vec3 v1;
+    vec3 v2;
 
     Face() {}
-    Face(vec3 v0, vec3 v1, vec3 v2): v0_vector(v0),v1_vector(v1),v2_vector(v2){}
+    Face(vec3 v0, vec3 v1, vec3 v2):v0(v0),v1(v1),v2(v2){}
 
     inline vec3 normal() const {
-      return unit_vector(cross(v1_vector-v0_vector,v2_vector-v0_vector));
+      return unit_vector(cross(v1-v0,v2-v0));
     }
 };
 
-
-class Shapes{
-public:
-  int object_type;
-  int material_id;
-};
-
-class Sphere : public Shapes{
+class Sphere{
 public:
   int object_type = 1;
   int center_vertex_id;
@@ -47,14 +35,21 @@ public:
   static Vec4f hit_sphere(const ray& r, const Sphere& sphere);
 };
 
-class Triangle : public Shapes{
+class Triangle{
 public:
   int object_type = 2;
   int material_id;
   Face indices;
   Triangle(){}
+  Triangle(int material_id, vec3 v0, vec3 v1, vec3 v2) : material_id(material_id){
+    indices.v0 = v0;
+    indices.v1 = v1;
+    indices.v2 = v2;
+  }
   Triangle(int material_id, Face indices) : material_id(material_id){
-    indices = Face(indices.v0_vector,indices.v1_vector,indices.v2_vector);
+    indices.v0 = indices.v0;
+    indices.v1 = indices.v1;
+    indices.v2 = indices.v2;
     }
   static Vec4f hit_triangle(const ray& r, const Triangle& triangle);
 };

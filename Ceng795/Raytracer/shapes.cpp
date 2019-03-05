@@ -36,9 +36,9 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
   float x = r.direction().x;
   float y = r.direction().y;
   float z = r.direction().z;
-  vec3 p1 = triangle.indices.v0_vector;
-  vec3 p2 = triangle.indices.v1_vector;
-  vec3 p3 = triangle.indices.v2_vector;
+  vec3 p1 = triangle.indices.v0;
+  vec3 p2 = triangle.indices.v1;
+  vec3 p3 = triangle.indices.v2;
   float one = (p1.x-p2.x);
   float ten = (p1.z-p3.z);
   float eleven = (p1.y-p3.y);
@@ -53,30 +53,28 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
   float eight = (p1.y-r.origin().y);
   float seven = (eight*z-twelve*y);
 
-  float det_A_inv = 1.0f / ((one*two)-(three*four)+(x*five));
+  float det_A = (one*two)-(three*four)+(x*five);
+  float det_A_inv = 1.0f / det_A;
+  float beta  = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
 
-  float beta = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
 
-  if(beta < 0 || beta > 1.0f)
+  if(beta < 0.f || beta > 1.0f)
   {
-   Vec4f result(0,0,0,-1);
-   return result;
+   return Vec4f(0,0,0,-1);
   }
 
   float gamma = ((one*seven)-(six*four)+(x*(nine*twelve-eight*thirteen))) * det_A_inv;
 
   if( gamma < 0 || (beta+gamma > 1))
   {
-    Vec4f result(0,0,0,-1);
-    return result;
+    return Vec4f(0,0,0,-1);
   }
   else{
     float t = ((one*(eleven*twelve-ten*eight))
               -(three*(nine*twelve-thirteen*eight))
               +(six*five))* det_A_inv;
 
-    Vec4f result(r.point_at_parameter(t),t);
-    return result;
+    return Vec4f(r.point_at_parameter(t),t);
   }
 };
 
@@ -85,6 +83,7 @@ Vec4f1i Mesh::hit_mesh(const ray& r, const Mesh& mesh){
     Vec4f1i result(0,0,0,-1,0);
 
     for(int i = 0 ; i < size_mesh ; i++){
+
         Vec4f temp = Triangle::hit_triangle(r,Triangle(mesh.material_id,mesh.faces[i]));
         if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
             result = Vec4f1i(temp,i);
