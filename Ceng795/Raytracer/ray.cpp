@@ -8,7 +8,7 @@ bool ray::refraction(const ray& r_in, const vec3& normal, float refraction_index
 
   vec3 outward_normal;
   vec3 refracted;
-  vec3 reflected = reflect(r_in.direction(), normal);
+  vec3 reflected = reflect(unit_vector(r_in.direction()), normal);
   float reflect_prob;
   float cosine;
   float ref_idx ;
@@ -134,7 +134,8 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               // float temp = dot(normal,(-1)*(ray_direction_normalized));
               // vec3 new_ray_direction = (ray_direction_normalized + 2*temp*normal);
               vec3 new_ray_direction;
-              if(refraction(r,normal,scene.materials[object.material_id-1].refraction_index,new_ray_direction)){
+              bool rfl = refraction(r,normal,scene.materials[object.material_id-1].refraction_index,new_ray_direction);
+              if(rfl){
                 return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].transparency);
               }
               else{
