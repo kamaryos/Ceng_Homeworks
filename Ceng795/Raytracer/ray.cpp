@@ -45,11 +45,9 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               intersection_point_4.z = temp.z;
               intersection_point_4.w = temp.w;
 
-              Triangle triangle1(scene.meshes[m].material_id,scene.meshes[m].faces[temp.i]); // Mesh
-              object.object_type = 3;
-	      object.material_id = scene.meshes[m].material_id;
-              object.triangle = triangle1;
-
+              object.object_type = 3; // Mesh
+	            object.material_id = scene.meshes[m].material_id;
+              object.triangle = scene.meshes[m].triangles[temp.i];
           }
       }
 

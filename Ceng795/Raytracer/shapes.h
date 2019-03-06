@@ -63,10 +63,10 @@ class Mesh : public Triangle {
 public:
   int object_type = 3;
   int material_id;
-  std::vector<Face> faces;
+  std::vector<Triangle> triangles;
   float shadow_ray_epsilon;
   Mesh(){}
-  Mesh(std::vector<Face> faces, float shadow_ray_epsilon): faces(faces),shadow_ray_epsilon(shadow_ray_epsilon){} // Is this possible and the class architecture is ok or not!?
+  Mesh(std::vector<Triangle> triangles, float shadow_ray_epsilon): triangles(triangles),shadow_ray_epsilon(shadow_ray_epsilon){} // Is this possible and the class architecture is ok or not!?
 
   static Vec4f1i hit_mesh(const ray& r, const Mesh& mesh);
 };
