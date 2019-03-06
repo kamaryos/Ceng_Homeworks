@@ -63,7 +63,6 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 
   float beta = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
 
-  std::cout<< ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve))) << det_A_inv<<std::endl;
 
   if(beta < 0.f || beta > 1.0f )
   {

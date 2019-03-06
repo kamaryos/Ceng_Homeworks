@@ -16,7 +16,7 @@ public:
   vec3 B;
 
   static vec3 generate_ray(const ray& r, const Scene& scene, int max_recursion_depth);
-
+  static bool refraction(const ray& r_in, const vec3& normal, float refraction_index, vec3& r_direction);
 };
 
 
