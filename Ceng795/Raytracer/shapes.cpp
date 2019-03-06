@@ -33,10 +33,12 @@ Vec4f Sphere::hit_sphere(const ray& r, const Sphere& sphere){ // if ray intersec
 
 Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 
+
+
   float x = r.direction().x;
   float y = r.direction().y;
   float z = r.direction().z;
-	
+
 
   vec3 p1 = triangle.indices.v0_vector;
   vec3 p2 = triangle.indices.v1_vector;
@@ -55,14 +57,12 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
   float eight = (p1.y-r.origin().y);
   float seven = (eight*z-twelve*y);
 
-	
 
-  float det_A((one*two)-(three*four)+(x*five));
-//Seg fault in this line!! check
-  float det_A_inv = 1.0f / det_A;
-	
+
+  float det_A_inv = 1.0f / ((one*two)-(three*four)+(x*five));
 
   float beta = ((six*two)-(three*seven)+(x*(eight*ten-eleven*twelve)))* det_A_inv;
+
 
   if(beta < 0.f || beta > 1.0f )
   {
@@ -85,15 +85,14 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 };
 
 Vec4f1i Mesh::hit_mesh(const ray& r, const Mesh& mesh){
-    int size_mesh = mesh.faces.size();
+    int size_mesh = mesh.triangles.size();
     Vec4f1i result(0,0,0,-1.0f,0);
 
     for(int i = 0 ; i < size_mesh ; i++){
-	Face face = mesh.faces[i];
-        Vec4f temp = Triangle::hit_triangle(r,Triangle(mesh.material_id,face.v0_vector,face.v1_vector,face.v2_vector));
-		
-		if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
-            result = Vec4f1i(temp,i);
+        Vec4f temp = Triangle::hit_triangle(r,mesh.triangles[i]);
+
+      	if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
+                result = Vec4f1i(temp,i);
         }
     }
 

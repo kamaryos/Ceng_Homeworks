@@ -3,8 +3,43 @@
 #include "shapes.h"
 #include "parser.h"
 
-//TODO: Mesh intersection is wrong!!
-//Sphere and triangle intersection is working
+
+bool ray::refraction(const ray& r_in, const vec3& normal, float refraction_index, vec3& r_direction){
+
+  vec3 outward_normal;
+  vec3 refracted;
+  vec3 reflected = reflect(r_in.direction(), normal);
+  float reflect_prob;
+  float cosine;
+  float ref_idx ;
+  if(refraction_index == 0){
+      r_direction = reflected;
+      return false;
+  }
+
+  if (dot(r_in.direction(), normal) > 0) {
+    outward_normal = -normal;
+    ref_idx = refraction_index;
+
+    cosine = dot(r_in.direction(), normal) / r_in.direction().length();
+    cosine = sqrt(1 - ref_idx*ref_idx*(1-cosine*cosine));
+  }
+  else {
+      outward_normal = normal;
+      ref_idx = 1.0f / refraction_index;
+      cosine = -dot(r_in.direction(), normal) / r_in.direction().length();
+  }
+
+  if (refract(r_in.direction(), outward_normal, ref_idx , refracted)){
+    r_direction = refracted;
+    return true;
+  }
+
+  r_direction = reflected;
+  return false;
+}
+
+
 
 vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth){
       vec3 result;
@@ -45,11 +80,9 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
               intersection_point_4.z = temp.z;
               intersection_point_4.w = temp.w;
 
-              Triangle triangle1(scene.meshes[m].material_id,scene.meshes[m].faces[temp.i]); // Mesh
-              object.object_type = 3;
-	      object.material_id = scene.meshes[m].material_id;
-              object.triangle = triangle1;
-
+              object.object_type = 3; // Mesh
+	            object.material_id = scene.meshes[m].material_id;
+              object.triangle = scene.meshes[m].triangles[temp.i];
           }
       }
 
@@ -97,10 +130,17 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
                       result += diffuse + specular;
                   }
               }
-              vec3 ray_direction_normalized = (r.direction() / (r.direction().length()));
-              float temp = dot(normal,(-1)*(ray_direction_normalized));
-              vec3 new_ray_direction = (ray_direction_normalized + 2*temp*normal);
-              return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].mirror);
+              // vec3 ray_direction_normalized = (r.direction() / (r.direction().length()));
+              // float temp = dot(normal,(-1)*(ray_direction_normalized));
+              // vec3 new_ray_direction = (ray_direction_normalized + 2*temp*normal);
+              vec3 new_ray_direction;
+              if(refraction(r,normal,scene.materials[object.material_id-1].refraction_index,new_ray_direction)){
+                return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].transparency);
+              }
+              else{
+                return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].mirror);
+              }
+
           }
       }
 
