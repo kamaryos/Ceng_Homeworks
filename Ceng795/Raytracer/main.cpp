@@ -23,6 +23,8 @@ void initialize(const std::string& filepath){
     vec3 up = cross(unit_vector(-1*camera.gaze),cross(camera.up,unit_vector(-1*camera.gaze)));
     vec3 plane_side_vector = unit_vector(cross(up,unit_vector(camera.gaze))) ; // plane_side_vector = UP vector of image plane(same with cameras UP vector) X GAZE vector
 
+    camera.gaze = unit_vector(camera.gaze);
+    camera.up = up;
     float width_pixel = (abs(camera.near_plane.x) + abs(camera.near_plane.y)) / camera.image_width; // Width of one pixel
 
     vec3 ray_origin = camera.position;

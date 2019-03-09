@@ -31,6 +31,7 @@ public:
   inline float squared_length() const {
     return x*x + y*y + z*z;
   }
+
   inline void make_unit_vector();
 
 };
@@ -52,7 +53,7 @@ struct Vec4f
     Vec4f(){}
     Vec4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
     Vec4f(vec3 vec, float w) : x(vec.x), y(vec.y) , z(vec.z), w(w) {}
-    
+
 };
 
 struct Vec4f1i
@@ -177,6 +178,9 @@ inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
 
+inline vec3 power(vec3 v,int t){
+  return vec3(pow(v.x,t),pow(v.y,t),pow(v.z,t));
+}
 
 
 #endif

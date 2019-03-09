@@ -18,6 +18,7 @@ public:
     //Data
     Vec3i background_color;
     float shadow_ray_epsilon;
+    float intersection_test_epsilon;
     int max_recursion_depth;
     std::vector<Camera> cameras;
     vec3 ambient_light;

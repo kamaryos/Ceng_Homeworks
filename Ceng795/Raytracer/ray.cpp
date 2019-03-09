@@ -4,39 +4,33 @@
 #include "parser.h"
 
 
-bool ray::refraction(const ray& r_in, const vec3& normal, float refraction_index, vec3& r_direction){
-
+bool ray::refraction(const ray& r_in, const vec3& normal, float refraction_index, vec3& r_direction, float r_o){
   vec3 outward_normal;
+  float ni_over_nt;
   vec3 refracted;
-  vec3 reflected = reflect(unit_vector(r_in.direction()), normal);
-  float reflect_prob;
+
   float cosine;
-  float ref_idx ;
-  if(refraction_index == 0){
-      r_direction = reflected;
-      return false;
-  }
-
   if (dot(r_in.direction(), normal) > 0) {
-    outward_normal = -normal;
-    ref_idx = refraction_index;
+      outward_normal = -normal;
+      ni_over_nt = refraction_index;
 
-    cosine = dot(r_in.direction(), normal) / r_in.direction().length();
-    cosine = sqrt(1 - ref_idx*ref_idx*(1-cosine*cosine));
+      cosine = dot(r_in.direction(), normal) ;
   }
   else {
       outward_normal = normal;
-      ref_idx = 1.0f / refraction_index;
-      cosine = -dot(r_in.direction(), normal) / r_in.direction().length();
+      ni_over_nt = 1.0 / refraction_index;
+      cosine = -dot(r_in.direction(), normal) ;
   }
+  if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
+    r_o = schlick(cosine, refraction_index);
+  else
+    r_o = 1.0;
 
-  if (refract(r_in.direction(), outward_normal, ref_idx , refracted)){
-    r_direction = refracted;
-    return true;
-  }
+  r_direction = unit_vector(refracted) ;
 
-  r_direction = reflected;
-  return false;
+  return true;
+
+
 }
 
 
@@ -130,17 +124,28 @@ vec3 ray::generate_ray(const ray& r, const Scene& scene, int max_recursion_depth
                       result += diffuse + specular;
                   }
               }
-              // vec3 ray_direction_normalized = (r.direction() / (r.direction().length()));
-              // float temp = dot(normal,(-1)*(ray_direction_normalized));
-              // vec3 new_ray_direction = (ray_direction_normalized + 2*temp*normal);
-              vec3 new_ray_direction;
-              bool rfl = refraction(r,normal,scene.materials[object.material_id-1].refraction_index,new_ray_direction);
-              if(rfl){
-                return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].transparency);
+
+
+              vec3 reflected = reflect(unit_vector(r.direction()), normal);
+              float refraction_index = scene.materials[object.material_id-1].refraction_index;
+              vec3 reflected_color =  generate_ray(ray(intersection_point,reflected), scene, max_recursion_depth-1) ;
+
+              if(refraction_index == 0){
+                return result + reflected_color* scene.materials[object.material_id-1].mirror ;
               }
-              else{
-                return (result + generate_ray(ray(intersection_point,new_ray_direction), scene, max_recursion_depth-1) * scene.materials[object.material_id-1].mirror);
-              }
+
+              vec3 refracted ;
+              float kr ;
+              bool refracted_bool = refraction(r,normal,refraction_index,refracted,kr);
+              vec3 refracted_color =  generate_ray(ray(intersection_point,refracted), scene, max_recursion_depth-1) ;
+
+
+              vec3 attenuation = power(scene.materials[object.material_id-1].transparency,1+intersection_point_4.w);
+
+              return (result + attenuation*(kr*reflected_color + (1-kr)*refracted_color));
+
+
+
 
           }
       }

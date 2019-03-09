@@ -42,6 +42,17 @@ void Scene::loadFromXml(const std::string& filepath)
       stream << "0.001" << std::endl;
   }
   stream >> shadow_ray_epsilon;
+  //IntersectionTestEpsilon
+  element = root->FirstChildElement("IntersectionTestEpsilon");
+  if (element)
+  {
+      stream << element->GetText() << std::endl;
+  }
+  else
+  {
+      stream << "0" << std::endl;
+  }
+  stream >> intersection_test_epsilon;
 
   //Get MaxRecursionDepth
   element = root->FirstChildElement("MaxRecursionDepth");
