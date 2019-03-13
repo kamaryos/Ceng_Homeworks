@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 //TODO:
@@ -82,10 +83,13 @@ int read_line(int N, Array* arr){
 	size_t len = 0;
 	ssize_t read;
 
-	fp = fopen("/word_count/input/input.txt", "r");
+	fp = fopen("word_count/input/input.txt", "r");
 
-	if (fp == NULL)
-			exit(1);
+
+
+	if (fp == NULL){
+		exit(1);
+	}
 
 	int i = 0;
   while ((read = getline(&line, &len, fp)) != -1) {
@@ -94,7 +98,11 @@ int read_line(int N, Array* arr){
 		arr[i].index = i;
 		strncpy(arr[i].array,line,len);
 		i++;
+		printf("Line 101-%d!\n",i);
 	}
+
+
+
   fclose(fp);
   if (line)
       free(line);
@@ -105,8 +113,7 @@ int read_line(int N, Array* arr){
 int main(int argc, char argv[]) {
 
 
-	int fd1[2],fd2[2];
-	char *messages[]={"5+4\n","5*6\n","23+100-(4*4)\n"};
+	printf("Line 110!\n");
 
 	if(argc < 3 ){
 		printf("Please enter the needed arguments /n");
@@ -115,7 +122,8 @@ int main(int argc, char argv[]) {
 
 	else if(argc == 3){
 
-		int N = atoi(argv[1]);
+
+		int N = (int)argv[1];
 
 		int **fd = (int **)malloc(N * sizeof(int *));;
 
@@ -124,7 +132,9 @@ int main(int argc, char argv[]) {
 			pipe(fd[index]);
 		}
 
-		Array *arr;
+
+
+		Array *arr = (Array *)malloc(100*sizeof(Array*));
 		int size = read_line(N,arr);
 
 		for(int i = 0 ; i < N ; i++ ){
