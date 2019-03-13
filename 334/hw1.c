@@ -1,14 +1,15 @@
-#include<unistd.h>
-#include<stdio.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+
 
 //TODO:
 // Read line by line and access by using (i mod N)-1
 // Giving lines to exec function as parameter
 // Second part of the assignment
 
-//Below comments will used for different usage 
+//Below comments will used for different usage
 
-//
 // #define _GNU_SOURCE
 // #include <stdio.h>
 // #include <stdlib.h>
@@ -36,12 +37,6 @@
 // }
 
 
-// typedef struct {
-//   int *array;
-//   size_t used;
-//   size_t size;
-// } Array;
-//
 // void initArray(Array *a, size_t initialSize) {
 //   a->array = (int *)malloc(initialSize * sizeof(int));
 //   a->used = 0;
@@ -64,6 +59,14 @@
 //   a->used = a->size = 0;
 // }
 
+
+typedef struct Array{
+  char *array;
+	int size;
+  int index;
+} Array;
+
+
 void close_pipe(int **fd,int i,int N){
 	for(int j =0 ; j < N ; j++){
 		if(j != i){
@@ -73,7 +76,7 @@ void close_pipe(int **fd,int i,int N){
 	}
 }
 
-char* read_line(int N){
+int read_line(int N, Array* arr){
 	FILE *fp;
 	char * line = NULL;
 	size_t len = 0;
@@ -81,56 +84,75 @@ char* read_line(int N){
 
 	fp = fopen("/word_count/input/input.txt", "r");
 
+	if (fp == NULL)
+			exit(1);
 
-
+	int i = 0;
   while ((read = getline(&line, &len, fp)) != -1) {
-      printf("Retrieved line of length %zu:\n", read);
-      printf("%s", line);
-  }
-
+		arr[i].array = malloc(len*sizeof(char));
+		arr[i].size = len;
+		arr[i].index = i;
+		strncpy(arr[i].array,line,len);
+		i++;
+	}
   fclose(fp);
   if (line)
       free(line);
-  exit(EXIT_SUCCESS);
+
+	return i;
 }
 
-int main(int argc, int argv[]) {
+int main(int argc, char argv[]) {
 
-	int p,i,q;
+
 	int fd1[2],fd2[2];
 	char *messages[]={"5+4\n","5*6\n","23+100-(4*4)\n"};
 
 	if(argc < 3 ){
-		printf("Please enter the needed arguments");
+		printf("Please enter the needed arguments /n");
 		exit(1);
 	}
 
 	else if(argc == 3){
 
-		int N = argv[2];
+		int N = atoi(argv[1]);
 
 		int **fd = (int **)malloc(N * sizeof(int *));;
 
 		for(int index; index < N ; index++){
 			fd[index] = (int *)malloc(2*sizeof(int));
+			pipe(fd[index]);
 		}
 
-		if (fp == NULL)
-				exit(EXIT_FAILURE);
+		Array *arr;
+		int size = read_line(N,arr);
 
-
-		for(j = 0 ; j < N ; j++ ){
+		for(int i = 0 ; i < N ; i++ ){
 			if(fork()){
 				close(fd[i][0]);
 				close_pipe(fd,i,N);
 				dup2(fd[i][1],1);
 				close(fd[i][1]);
+				for(int k = 0 ; k < size ; k++ ){
+					if(i % N == arr[k].index){ // or 1
+						fprintf(stdin,arr[k].array); // check
+						fflush(stdin); // check
+						sleep(1);
+					}
+				}
+
 			}
 			else{
-					close(fd[i][1]);
-					close_pipe(fd,i,N);
-					dup2(fd[i][0],0);
-					close(fd[i][0]);
+				close(fd[i][1]);
+				close_pipe(fd,i,N);
+				dup2(fd[i][0],0);
+				close(fd[i][0]);
+
+				char* result;
+				if (fgets(result,100,stdin)) {
+					printf("%s\n",result);
+				}
+				execv(argv[2],(char *)0);
 			}
 		}
 
@@ -138,59 +160,59 @@ int main(int argc, int argv[]) {
 	else if(argc == 4){
 	}
 	else{
-		printf("Too many argumants!!")
+		printf("Too many argumants!! /n");
 		exit(2);
 	}
 
-
-	pipe(fd1);
-	pipe(fd2);
-
-	if (p=fork()) {
-
-		if(q=fork()){
-
-			close(fd1[0]);
-			close(fd2[0]);
-			close(fd2[1]);
-			dup2(fd1[1],2);
-			close(fd1[0]);
-
-			for (i=0;i<3;i++) {
-				fprintf(stderr,messages[i]);
-				fflush(stderr);
-				sleep(1);
-			}
-
-
-		}
-		else{
-			close(fd1[1]);
-			close(fd2[0]);
-			dup2(fd1[0],0);
-			dup2(fd2[1],1);
-			close(fd1[0]);
-			close(fd2[1]);
-			execl("/usr/bin/bc","bc","-q",(char *)0);
-
-
-		}
-
-
-	} else {
-		close(fd1[0]);
-		close(fd1[1]);
-		close(fd2[1]);
-		dup2(fd2[0],0);
-		close(fd2[0]);
-
-		for(i=0;i<3;i++){
-			if (fgets(result,100,stdin)) {
-				printf("%s\n",result);
-			}
-		}
-
-	}
+	//
+	// pipe(fd1);
+	// pipe(fd2);
+	//
+	// if (p=fork()) {
+	//
+	// 	if(q=fork()){
+	//
+	// 		close(fd1[0]);
+	// 		close(fd2[0]);
+	// 		close(fd2[1]);
+	// 		dup2(fd1[1],2);
+	// 		close(fd1[0]);
+	//
+	// 		for (i=0;i<3;i++) {
+	// 			fprintf(stderr,messages[i]);
+	// 			fflush(stderr);
+	// 			sleep(1);
+	// 		}
+	//
+	//
+	// 	}
+	// 	else{
+	// 		close(fd1[1]);
+	// 		close(fd2[0]);
+	// 		dup2(fd1[0],0);
+	// 		dup2(fd2[1],1);
+	// 		close(fd1[0]);
+	// 		close(fd2[1]);
+	// 		execl("/usr/bin/bc","bc","-q",(char *)0);
+	//
+	//
+	// 	}
+	//
+	//
+	// } else {
+	// 	close(fd1[0]);
+	// 	close(fd1[1]);
+	// 	close(fd2[1]);
+	// 	dup2(fd2[0],0);
+	// 	close(fd2[0]);
+	//
+	// 	for(i=0;i<3;i++){
+	// 		if (fgets(result,100,stdin)) {
+	// 			printf("%s\n",result);
+	// 		}
+	// 	}
+	//
+	// }
 
 	return 0;
 }
