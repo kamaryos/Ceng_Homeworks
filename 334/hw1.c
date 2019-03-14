@@ -171,8 +171,9 @@ int main(int argc, char *argv[]) {
 
 	else if(argc == 3){
 
+    int status;
 
-		int N = atoi(argv[1]);
+    int N = atoi(argv[1]);
 
 
 		int **fd = (int **)malloc(N * sizeof(int *));;
@@ -211,6 +212,10 @@ int main(int argc, char *argv[]) {
 				execl(argv[2],stdin,(char *)0);
   		}
   	}
+
+    // for(int in = 0 ; in < N ; in++){
+    //   wait(&status);
+    // }
 
   }
 	else if(argc == 4){
@@ -309,7 +314,9 @@ int main(int argc, char *argv[]) {
       }
     }
 
-
+    // for(int in = 0 ; in < 2*N ; in++){
+    //   wait(&status);
+    // }
 
 
 
