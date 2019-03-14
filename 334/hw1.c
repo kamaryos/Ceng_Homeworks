@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
           close_pipe(fd2,i,N);
           close_pipe_2(fd,i,N);
           dup2(fd[i][1][0],0);
-          dup2(fd2[i][1],1)
+          dup2(fd2[i][1],1);
           close(fd[i][0][1]);
           close(fd2[i][1]);
           execl(argv[3],stdin,(char *)0);
