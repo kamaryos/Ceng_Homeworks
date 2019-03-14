@@ -98,9 +98,7 @@ int read_line(int N, Array* arr){
 		arr[i].size = read;
 		arr[i].index = i;
     snprintf(arr[i].array, read, "%s", line);
-    //strncpy(arr[i].array,line,len);
-    printf("Line 101-%s!\n",arr[i].array);
-		i++;
+    i++;
   }
 
 
@@ -112,20 +110,23 @@ int read_line(int N, Array* arr){
 
 }
 
-int main(int argc, char argv[]) {
+int main(int argc, char *argv[]) {
 
 
 	printf("Line 110!\n");
 
 	if(argc < 3 ){
-		printf("Please enter the needed arguments /n");
+		printf("Please enter the needed arguments \n");
 		exit(1);
 	}
 
 	else if(argc == 3){
 
 
-		int N = (int)argv[1];
+		int N = atoi(argv[1]);
+
+
+		printf("%d\n",N );
 
 		int **fd = (int **)malloc(N * sizeof(int *));;
 
@@ -135,43 +136,42 @@ int main(int argc, char argv[]) {
 		}
 
 
-
 		Array *arr = (Array *)malloc(10*sizeof(Array));
 		int size = read_line(N,arr);
 
-    	for(int i = 0 ; i < N ; i++ ){
-    		if(fork()){
-    			close(fd[i][0]);
-    			close_pipe(fd,i,N);
-    			dup2(fd[i][1],1);
-    			close(fd[i][1]);
-    			for(int k = 0 ; k < size ; k++ ){
-    				if(i % N == arr[k].index){ // or 1
-    					fprintf(stdin,arr[k].array); // check
-    					fflush(stdin); // check
-    				}
-    			}
+  	for(int i = 0 ; i < N ; i++ ){
+  		if(fork()){
+  			close(fd[i][0]);
+  			close_pipe(fd,i,N);
+  			dup2(fd[i][1],1);
+  			close(fd[i][1]);
 
-    		}
-    		else{
-    			close(fd[i][1]);
-    			close_pipe(fd,i,N);
-    			dup2(fd[i][0],0);
-    			close(fd[i][0]);
+				for(int k = 0 ; k < size ; k++ ){
+  				if(i % N == arr[k].index){ // or 1
+  					fprintf(stdout,arr[k].array); // check
+  					fflush(stdout); // check
+  				}
+  			}
 
-    			char* result;
-    			if (fgets(result,100,stdin)) {
-    				printf("%s\n",result);
-    			}
-    			execv(argv[2],(char *)0);
-    		}
-    	}
+  		}
+  		else{
+  			close(fd[i][1]);
+  			close_pipe(fd,i,N);
+  			dup2(fd[i][0],0);
+  			close(fd[i][0]);
+				char* result;
+				if(fgets(result,100,stdin)) {
+  				printf("%s\n",result);
+				}
+				execv(argv[2],(char *)0);
+  		}
+  	}
 
   }
 	else if(argc == 4){
 	}
 	else{
-		printf("Too many argumants!! /n");
+		printf("Too many argumants!! \n");
 		exit(2);
 	}
 
