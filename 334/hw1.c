@@ -78,13 +78,13 @@ void close_pipe(int **fd,int i,int N){
 }
 
 int read_line(int N, Array* arr){
+
 	FILE *fp;
 	char * line = NULL;
-	size_t len = 0;
-	ssize_t read;
+	int len = 0;
+	int read;
 
 	fp = fopen("word_count/input/input.txt", "r");
-
 
 
 	if (fp == NULL){
@@ -92,15 +92,16 @@ int read_line(int N, Array* arr){
 	}
 
 	int i = 0;
-  while ((read = getline(&line, &len, fp)) != -1) {
-		arr[i].array = malloc(len*sizeof(char));
-		arr[i].size = len;
-		arr[i].index = i;
-		strncpy(arr[i].array,line,len);
-		i++;
-		printf("Line 101-%d!\n",i);
-	}
 
+  while ((read = getline(&line, &len, fp)) != -1) {
+  	arr[i].array = malloc((read)*sizeof(char));
+		arr[i].size = read;
+		arr[i].index = i;
+    snprintf(arr[i].array, read, "%s", line);
+    //strncpy(arr[i].array,line,len);
+    printf("Line 101-%s!\n",arr[i].array);
+		i++;
+  }
 
 
   fclose(fp);
@@ -108,6 +109,7 @@ int read_line(int N, Array* arr){
       free(line);
 
 	return i;
+
 }
 
 int main(int argc, char argv[]) {
@@ -134,39 +136,38 @@ int main(int argc, char argv[]) {
 
 
 
-		Array *arr = (Array *)malloc(100*sizeof(Array*));
+		Array *arr = (Array *)malloc(10*sizeof(Array));
 		int size = read_line(N,arr);
 
-		for(int i = 0 ; i < N ; i++ ){
-			if(fork()){
-				close(fd[i][0]);
-				close_pipe(fd,i,N);
-				dup2(fd[i][1],1);
-				close(fd[i][1]);
-				for(int k = 0 ; k < size ; k++ ){
-					if(i % N == arr[k].index){ // or 1
-						fprintf(stdin,arr[k].array); // check
-						fflush(stdin); // check
-						sleep(1);
-					}
-				}
+    	for(int i = 0 ; i < N ; i++ ){
+    		if(fork()){
+    			close(fd[i][0]);
+    			close_pipe(fd,i,N);
+    			dup2(fd[i][1],1);
+    			close(fd[i][1]);
+    			for(int k = 0 ; k < size ; k++ ){
+    				if(i % N == arr[k].index){ // or 1
+    					fprintf(stdin,arr[k].array); // check
+    					fflush(stdin); // check
+    				}
+    			}
 
-			}
-			else{
-				close(fd[i][1]);
-				close_pipe(fd,i,N);
-				dup2(fd[i][0],0);
-				close(fd[i][0]);
+    		}
+    		else{
+    			close(fd[i][1]);
+    			close_pipe(fd,i,N);
+    			dup2(fd[i][0],0);
+    			close(fd[i][0]);
 
-				char* result;
-				if (fgets(result,100,stdin)) {
-					printf("%s\n",result);
-				}
-				execv(argv[2],(char *)0);
-			}
-		}
+    			char* result;
+    			if (fgets(result,100,stdin)) {
+    				printf("%s\n",result);
+    			}
+    			execv(argv[2],(char *)0);
+    		}
+    	}
 
-	}
+  }
 	else if(argc == 4){
 	}
 	else{
