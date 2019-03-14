@@ -61,6 +61,37 @@
 // }
 
 
+// #define INITIAL_CAPACITY 2
+//
+// void push(int *arr, int index, int value, int *size, int *capacity){
+//      if(*size > *capacity){
+//           realloc(arr, sizeof(arr) * 2);
+//           *capacity = sizeof(arr) * 2;
+//      }
+//
+//      arr[index] = value;
+//      *size = *size + 1;
+// }
+//
+// int main(){
+//      int size = 0;
+//      int capacity = INITIAL_CAPACITY;
+//      int* arr = malloc(INITIAL_CAPACITY * sizeof(int));
+//
+//      push(arr, 0, 1, &size, &capacity);
+//      push(arr, 1, 2, &size, &capacity);
+//      push(arr, 2, 3, &size, &capacity);
+//
+//      printf("Current capacity: %d\n", capacity); // Current capacity: 2
+//
+//      push(arr, 3, 4, &size, &capacity);
+//      push(arr, 4, 5, &size, &capacity);
+//      push(arr, 5, 6, &size, &capacity);
+//
+//      printf("Current capacity: %d\n", capacity); // Current capacity: 16
+// }
+
+
 typedef struct Array{
   char *array;
 	int size;
@@ -113,8 +144,6 @@ int read_line(int N, Array* arr){
 int main(int argc, char *argv[]) {
 
 
-	printf("Line 110!\n");
-
 	if(argc < 3 ){
 		printf("Please enter the needed arguments \n");
 		exit(1);
@@ -126,8 +155,6 @@ int main(int argc, char *argv[]) {
 		int N = atoi(argv[1]);
 
 
-		printf("%d\n",N );
-
 		int **fd = (int **)malloc(N * sizeof(int *));;
 
 		for(int index; index < N ; index++){
@@ -136,8 +163,10 @@ int main(int argc, char *argv[]) {
 		}
 
 
-		Array *arr = (Array *)malloc(10*sizeof(Array));
+		Array *arr = (Array*)malloc(10*sizeof(Array));
 		int size = read_line(N,arr);
+
+
 
   	for(int i = 0 ; i < N ; i++ ){
   		if(fork()){
@@ -145,7 +174,7 @@ int main(int argc, char *argv[]) {
   			close_pipe(fd,i,N);
   			dup2(fd[i][1],1);
   			close(fd[i][1]);
-
+				printf("\n");
 				for(int k = 0 ; k < size ; k++ ){
   				if(i % N == arr[k].index){ // or 1
   					fprintf(stdout,arr[k].array); // check
@@ -159,11 +188,7 @@ int main(int argc, char *argv[]) {
   			close_pipe(fd,i,N);
   			dup2(fd[i][0],0);
   			close(fd[i][0]);
-				char* result;
-				if(fgets(result,100,stdin)) {
-  				printf("%s\n",result);
-				}
-				execv(argv[2],(char *)0);
+				execl(argv[2],stdin,(char *)0);
   		}
   	}
 
