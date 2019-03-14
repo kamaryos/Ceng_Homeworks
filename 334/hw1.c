@@ -108,6 +108,26 @@ void close_pipe(int **fd,int i,int N){
 	}
 }
 
+void close_pipe_2(int ***fd,int i,int N){
+  for(int j =0 ; j < N ; j++){
+		if(j != i){
+			close(fd[j][0][0]);
+			close(fd[j][0][1]);
+    	close(fd[j][1][0]);
+			close(fd[j][1][1]);
+		}
+	}
+}
+
+void close_pipe_3(int **fd,int i,int N){
+	for(int j = 0 ; j < N ; j++){
+		if(j != i && j != i-1){
+			close(fd[j][0]);
+			close(fd[j][1]);
+		}
+	}
+}
+
 int read_line(int N, Array* arr){
 
 	FILE *fp;
@@ -169,7 +189,7 @@ int main(int argc, char *argv[]) {
 
 
   	for(int i = 0 ; i < N ; i++ ){
-  		if(fork()){
+  		if(fork()){ // parent
   			close(fd[i][0]);
   			close_pipe(fd,i,N);
   			dup2(fd[i][1],1);
@@ -183,7 +203,7 @@ int main(int argc, char *argv[]) {
   			}
 
   		}
-  		else{
+  		else{ // mapper
   			close(fd[i][1]);
   			close_pipe(fd,i,N);
   			dup2(fd[i][0],0);
@@ -194,6 +214,105 @@ int main(int argc, char *argv[]) {
 
   }
 	else if(argc == 4){
+
+  	int N = atoi(argv[1]);
+
+  	int ***fd = (int ***)malloc(N * sizeof(int **));;
+
+  	for(int index; index < N ; index++){
+  		fd[index] = (int **)malloc(2*sizeof(int *));
+      for(int index2 ; index2 < 2 ; index2++){
+        fd[index][index2] = (int *)malloc(2*sizeof(int));
+        pipe(fd[index][index2]);
+      }
+  	}
+
+    int **fd2 = (int **)malloc(N * sizeof(int *));;
+
+    for(int index; index < N ; index++){
+      fd2[index] = (int *)malloc(2*sizeof(int));
+      pipe(fd[index]);
+    }
+
+
+    // 0 for Mapper, 1 for Reducer
+
+    for(int i = 0 ; i < N ; i++ ){
+      if(fork()){
+
+        if(fork()){ // parent
+          close(fd[i][0][0]);
+          close(fd[i][1][0]);
+          close(fd[i][1][1]);
+          close_pipe_2(fd,i,N);
+          dup2(fd[i][0][1],1);
+          close(fd[i][0][1]);
+
+        }
+        else{ // mapper
+          close(fd[i][0][1]);
+          close(fd[i][1][0]);
+          close_pipe_2(fd,i,N);
+          dup2(fd[i][1][1],1);
+          dup2(fd[i][0][0],0);
+          close(fd[i][0][0]);
+          execl(argv[2],stdin,(char *)0);
+        }
+
+      }
+      else{ // reducer
+        if(i == 0){
+
+          close(fd[i][0][0]);
+          close(fd[i][0][1]);
+          close(fd[i][1][1]);
+          close(fd2[i][0]);
+          close_pipe(fd2,i,N);
+          close_pipe_2(fd,i,N);
+          dup2(fd[i][1][0],0);
+          dup2(fd2[i][1],1)
+          close(fd[i][0][1]);
+          close(fd2[i][1]);
+          execl(argv[3],stdin,(char *)0);
+
+        }
+
+        else if( i != 0 && i == N-1){
+
+          close(fd[i][0][0]);
+          close(fd[i][0][1]); // Parent pipe closed.
+          close(fd[i][1][1]);
+          close_pipe_2(fd,i,N);
+          close(fd2[i-1][1]);
+          close(fd2[i][0]);
+          close_pipe_3(fd2,i,N);
+          dup2(fd2[i-1][0],2); // Read end to stderr
+          dup2(fd2[i][1],1);
+          dup2(fd[i][1][0],0);
+          close(fd2[i-1][0]);
+          close(fd2[i][1]);
+          close(fd[i][1][0]);
+          execl(argv[3],stdin,(char *)0);
+        }
+        else{ // i = N-1 case
+          close(fd[i][0][0]);
+          close(fd[i][0][1]); // Parent pipe closed.
+          close(fd[i][1][1]);
+          close_pipe_2(fd,i,N);
+          close(fd2[i-1][1]);
+          close_pipe(fd2,i-1,N);
+          dup2(fd2[i-1][0],2); // Read end to stderr
+          dup2(fd[i][1][0],0);
+          close(fd2[i-1][0]);
+          execl(argv[3],stdin,(char *)0);
+        }
+      }
+    }
+
+
+
+
+
 	}
 	else{
 		printf("Too many argumants!! \n");
