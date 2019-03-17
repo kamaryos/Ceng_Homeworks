@@ -27,7 +27,7 @@ int main(int argc, const char * argv[]) {
     ofstream os(s.c_str());
     */
     while(readInput(line, 0, 256) > 0) {
-        //os << "Received: " << line << endl;
+        //cout << "Received: " << line << endl;
         word = strtok(line, " \n");
         while(word != NULL) {
             incWordCount(word, 1, words);
