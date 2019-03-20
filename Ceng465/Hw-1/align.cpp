@@ -13,11 +13,12 @@
 #define N_MATCH 0
 
 
-int max(int A, int B, int C)
+int max(int A, int B, int C, bool flag)
 {
-    if (A>=B && A>=C) return A;
-    else if (B>=A && B>=C) return B;
-    else return C;
+    if (A>=B && A>=C && A>0) {flag = false;return A;}
+    else if (B>=A && B>=C && B>0) return B;
+    else if (C > 0) return C;
+    else return 0;
 }
 
 int m(char p, char q)
@@ -57,8 +58,12 @@ int main(int argc, char *argv[]){
   else std::cout << "Unable to open file 2\n";
 
   int index = 0;
+
+  // std::vector<int> match(refseq_size,0);
+
   for (auto sr_line : lines) {
 
+      bool flag = true;
       int count = 0;
 
       size_t line_size = sr_line.length();
@@ -71,10 +76,11 @@ int main(int argc, char *argv[]){
 
       for (size_t i = 1; i <= line_size; i++) {
         for (size_t j = 1; j <= refseq_size; j++) {
-          if(j == refseq_size)
-            matrix[i][j] = max(matrix[i-1][j-1]+m(sr_line[i],refseq[j]),matrix[i][j-1]+TERMINAL_GAP,matrix[i-1][j]+TERMINAL_GAP);
+
+          if(j == refseq_size || flag == false)
+            matrix[i][j] = max(matrix[i-1][j-1]+m(sr_line[i],refseq[j]),matrix[i][j-1]+TERMINAL_GAP,matrix[i-1][j]+TERMINAL_GAP,flag);
           else
-            matrix[i][j] = max(matrix[i-1][j-1]+m(sr_line[i],refseq[j]),matrix[i][j-1]+INTERNAL_GAP,matrix[i-1][j]+INTERNAL_GAP);
+            matrix[i][j] = max(matrix[i-1][j-1]+m(sr_line[i],refseq[j]),matrix[i][j-1]+INTERNAL_GAP,matrix[i-1][j]+INTERNAL_GAP,flag);
         }
       }
 
@@ -83,16 +89,17 @@ int main(int argc, char *argv[]){
       ref_count += line_size;
 
 
-    // std::vector<int> match(refseq_size,0);
 
     // std::cout<<"Line "<< index <<"is finished. Count is " << count << " !!" <<std::endl;
     // index++;
-    for (size_t i = 0; i < line_size; i++) {
-      for (size_t j = 0; j < refseq_size; j++) {
-        if(matrix[i][j] > 30)
-        std::cout << matrix[i][j] << " | ";
-      }
-      std::cout << std::endl;
+    
+    // for (size_t i = 0; i < refseq_size; i++) {
+    //   for (size_t j = 0; j < line_size; j++) {
+    //     // if(matrix[j][i] > 10)
+    //     std::cout << matrix[j][i] << " | ";
+    //   }
+    //   std::cout << std::endl;
+
     }
 
 
