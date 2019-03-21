@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
 
             }
             if(matrix[i][j] >= 30){
-                end = i + j;
+                end = i*line_size + j;
                 flag = false;
                 start_end.push_back(start);
                 start_end.push_back(end);
