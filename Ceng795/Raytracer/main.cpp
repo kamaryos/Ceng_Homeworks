@@ -5,52 +5,43 @@
 #include "shapes.h"
 #include "camera.h"
 #include "parser.h"
+#include "scene.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 void initialize(const std::string& filepath){
 
-    Scene scene;
-    scene.loadFromXml(filepath); // Read the xml file into the scene
+  SceneRenderer scene_renderer(filepath.c_str());
 
-	for(auto c : scene.cameras){
-    Camera camera = c;
-    int w = camera.image_width;  // set w = # of pixels in width
-    int h = camera.image_height; // set h = # of pixels in height
+  const Camera& camera =  scene_renderer.Cameras()[0];
 
-    unsigned char* image = new unsigned char [w * h * 3]; // image array
-    vec3 up = cross(unit_vector(-1*camera.gaze),cross(camera.up,unit_vector(-1*camera.gaze)));
-    vec3 plane_side_vector = unit_vector(cross(up,unit_vector(camera.gaze))) ; // plane_side_vector = UP vector of image plane(same with cameras UP vector) X GAZE vector
 
-    camera.gaze = unit_vector(camera.gaze);
-    camera.up = up;
-    float width_pixel = (abs(camera.near_plane.x) + abs(camera.near_plane.y)) / camera.image_width; // Width of one pixel
+  const int width  = camera.image_width;
+  const int height = camera.image_height;
+  Vec3i *pixels = new Vec3i[width * height];
 
-    vec3 ray_origin = camera.position;
+  scene_renderer.SetUpScene(camera);
 
-    for(int i = 0; i<h; i++){ // For loops to set pixels left to right line by line
-  		vec3 firstPixel = Camera::locateFirstPixel(camera,i,plane_side_vector,width_pixel);
-  		for(int k = 0; k<w; k++){
-  			float kw = (k * width_pixel);
-  			vec3 current_pixel = firstPixel - plane_side_vector*kw ;
+  scene_renderer.RenderImage(camera,pixels,0,height,width);
 
-        vec3 ray_direction = current_pixel - camera.position;
-        ray r(ray_origin,ray_direction);
 
-        Vec3i shading_int(ray::generate_ray(r,scene,scene.max_recursion_depth));
+  unsigned char* image = new unsigned char[width * height * 3];
 
-        if(shading_int.x > 255){image[((3*i)*w) + (3*k)] = 255;}
-        else{image[((3*i)*w) + (3*k)] = shading_int.x;}
-        if(shading_int.y > 255){image[((3*i)*w) + ((3*k)+1)] = 255;}
-        else{image[((3*i)*w) + ((3*k)+1)] = shading_int.y;}
-        if(shading_int.z > 255){image[((3*i)*w) + ((3*k)+2)] = 255;}
-        else{image[((3*i)*w) + ((3*k)+2)] = shading_int.z;}
-      }
-    }
+   int idx = 0;
+   for (int i = 0; i < width; i++) {
+     for (int j = 0; j < height; j++) {
+       const Vec3i pixel = pixels[i * height + j];
+       image[idx++] = pixel.x;
+       image[idx++] = pixel.y;
+       image[idx++] = pixel.z;
+     }
+   }
 
-	stbi_write_png(camera.image_name.c_str(),w,h,3,image,w*sizeof(char)*3);
-	}
+  delete[] pixels;
+
+	stbi_write_png(camera.image_name.c_str(),width,height,3,image,width*sizeof(char)*3);
+  delete[] image;
 }
 
 

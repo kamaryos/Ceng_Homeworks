@@ -16,7 +16,7 @@ struct Scene
 {
 public:
     //Data
-    Vec3i background_color;
+    vec3 background_color;
     float shadow_ray_epsilon;
     float intersection_test_epsilon;
     int max_recursion_depth;

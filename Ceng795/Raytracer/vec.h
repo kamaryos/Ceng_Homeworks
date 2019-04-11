@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 
+constexpr const float kInf = std::numeric_limits<float>::infinity();
+constexpr const float kEpsilon = 1e-6;
 
 
 class vec3{
@@ -24,6 +27,17 @@ public:
   inline vec3& operator /=(const vec3 &v2);
   inline vec3& operator *=(const float t);
   inline vec3& operator /=(const float t);
+  inline float operator[](int i) const {
+    if(i==0) {return x;}
+    else if(i==1) {return y;}
+    else if(i==2) {return z;}
+  }
+  inline float& operator[](int i) {
+    if(i==0) {return x;}
+    else if(i==1) {return y;}
+    else if(i==2) {return z;}
+  }
+
 
   inline float length() const {
     return sqrt(x*x + y*y + z*z);
@@ -33,6 +47,8 @@ public:
   }
 
   inline void make_unit_vector();
+
+
 
 };
 
@@ -91,6 +107,7 @@ inline void vec3::make_unit_vector() {
   float k = 1.0 / sqrt(x*x + y*y + z*z) ;
   x *= k ; y *= k; z *= k;
 }
+
 
 inline vec3 operator+(const vec3 &v1, const vec3 &v2) {
     return vec3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);

@@ -181,26 +181,30 @@ void Scene::loadFromXml(const std::string& filepath)
   {
       child = element->FirstChildElement("Material");
       stream << child->GetText() << std::endl;
-      stream >> mesh.material_id;
+      int material_id;
+      stream >> material_id;
+      mesh.material_id = material_id-1;
 
       child = element->FirstChildElement("Faces");
       stream << child->GetText() << std::endl;
-      Triangle triangle;
+      Face face;
       int v0_id;int v1_id;int v2_id;
       while (!(stream >> v0_id).eof())
       {
           stream >> v1_id >> v2_id;
-          triangle.material_id = mesh.material_id;
-          triangle.indices.v0_vector = vertex_data[v0_id - 1];
-          triangle.indices.v1_vector = vertex_data[v1_id - 1];
-          triangle.indices.v2_vector = vertex_data[v2_id - 1];
+          face.material_id = mesh.material_id;
+          face.v0_vector = vertex_data[v0_id - 1];
+          face.v1_vector = vertex_data[v1_id - 1];
+          face.v2_vector = vertex_data[v2_id - 1];
+          face.CalculateNormal();
 
-          mesh.triangles.push_back(triangle);
+          mesh.faces.push_back(face);
       }
       stream.clear();
-      mesh.shadow_ray_epsilon = shadow_ray_epsilon;
+      // mesh.shadow_ray_epsilon = shadow_ray_epsilon;
+      face.material_id = mesh.material_id;
       meshes.push_back(mesh);
-      mesh.triangles.clear();
+      mesh.faces.clear();
       element = element->NextSiblingElement("Mesh");
   }
   stream.clear();
@@ -213,16 +217,20 @@ void Scene::loadFromXml(const std::string& filepath)
   {
       child = element->FirstChildElement("Material");
       stream << child->GetText() << std::endl;
-      stream >> triangle.material_id;
+      int material_id;
+      stream >> material_id;
+      triangle.material_id = material_id-1;
 
       child = element->FirstChildElement("Indices");
       stream << child->GetText() << std::endl;
       int v0_id;int v1_id;int v2_id;
       stream >> v0_id >> v1_id >> v2_id;
 
+      triangle.indices.material_id = triangle.material_id;
       triangle.indices.v0_vector = vertex_data[v0_id - 1];
       triangle.indices.v1_vector = vertex_data[v1_id - 1];
       triangle.indices.v2_vector = vertex_data[v2_id - 1];
+      triangle.indices.CalculateNormal();
 
       triangles.push_back(triangle);
       element = element->NextSiblingElement("Triangle");
@@ -236,16 +244,21 @@ void Scene::loadFromXml(const std::string& filepath)
   {
       child = element->FirstChildElement("Material");
       stream << child->GetText() << std::endl;
-      stream >> sphere.material_id;
+      int material_id;
+      stream >> material_id;
+      sphere.material_id = material_id-1;
 
       child = element->FirstChildElement("Center");
       stream << child->GetText() << std::endl;
-      stream >> sphere.center_vertex_id;
-      sphere.center = vertex_data[sphere.center_vertex_id-1];
+      int center_vertex_id;
+      stream >> center_vertex_id;
+      sphere.center = vertex_data[center_vertex_id-1];
 
       child = element->FirstChildElement("Radius");
       stream << child->GetText() << std::endl;
       stream >> sphere.radius;
+
+      sphere.Initialize();
 
       spheres.push_back(sphere);
       element = element->NextSiblingElement("Sphere");

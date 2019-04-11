@@ -1,48 +1,33 @@
 #include "shapes.h"
 #include "ray.h"
+#include "bvh.h"
 
 
 
-Vec4f Sphere::hit_sphere(const ray& r, const Sphere& sphere){ // if ray intersects, return intersection point, if not 0,0,0,-1
-
-  vec3 oc = (r.origin() - sphere.center);
-
-  float a = dot(r.direction(),r.direction());
-  float b = 2*dot(r.direction(),(r.origin() - sphere.center));
-  float c = dot(oc,oc) - (sphere.radius * sphere.radius);
-
-  float delta = (b*b) - (4*a*c);
-  float t = 0;
-
-  if(delta < 0){
-      //Find a better way to return this part
-        Vec4f result(0,0,0,-1);
-        return result;
-  }
-
-  else{
-      float t1 = ((-1)*b + sqrt(delta))/(2*a);
-      float t2 = ((-1)*b - sqrt(delta))/(2*a);
-      if(t1<t2){t=t1;}
-      else if(t2<t1){t=t2;}
-      else if(t1==t2){t=t1;}
-      Vec4f result(r.point_at_parameter(t),t);
-      return result;
-  }
+float Determinant(vec3 a, vec3 b, vec3 c) {
+  // vectors are columns
+  return a.x * (b.y * c.z - c.y * b.z) + a.y * (c.x * b.z - b.x * c.z) +
+         a.z * (b.x * c.y - c.x * b.y);
 };
 
-Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 
+hit_record Face::GetIntersection(const ray& r) const {
+  hit_record hit_record;
+  hit_record.t = kInf;
+  hit_record.material_id = -1;
 
+  if (!r.is_shadow && dot(r.direction(), normal) > .0) {
+        return hit_record;
+  }
 
   float x = r.direction().x;
   float y = r.direction().y;
   float z = r.direction().z;
 
 
-  vec3 p1 = triangle.indices.v0_vector;
-  vec3 p2 = triangle.indices.v1_vector;
-  vec3 p3 = triangle.indices.v2_vector;
+  vec3 p1 = v0_vector;
+  vec3 p2 = v1_vector;
+  vec3 p3 = v2_vector;
   float one = (p1.x-p2.x);
   float ten = (p1.z-p3.z);
   float eleven = (p1.y-p3.y);
@@ -66,61 +51,92 @@ Vec4f Triangle::hit_triangle(const ray& r, const Triangle& triangle){
 
   if(beta < 0.f || beta > 1.0f )
   {
-   return Vec4f(0,0,0,-1.0f);
+   return hit_record;
   }
 
   float gamma = ((one*seven)-(six*four)+(x*(nine*twelve-eight*thirteen))) * det_A_inv;
 
   if( gamma < 0.f || (beta+gamma > 1.0f))
   {
-    return Vec4f(0,0,0,-1.0f);
+    return hit_record;
   }
 
   float t = ((one*(eleven*twelve-ten*eight))
               -(three*(nine*twelve-thirteen*eight))
               +(six*five))* det_A_inv;
 
-  return Vec4f(r.point_at_parameter(t),t);
-
+  hit_record.t = t;
+  hit_record.normal = normal;
+  hit_record.material_id = material_id;
+  hit_record.obj = this;
+  return hit_record;
 };
 
-Vec4f1i Mesh::hit_mesh(const ray& r, const Mesh& mesh){
-    int size_mesh = mesh.triangles.size();
-    Vec4f1i result(0,0,0,-1.0f,0);
 
-    for(int i = 0 ; i < size_mesh ; i++){
-        Vec4f temp = Triangle::hit_triangle(r,mesh.triangles[i]);
 
-      	if((temp.w > mesh.shadow_ray_epsilon) && ((result.w == -1) || (temp.w < result.w))){
-                result = Vec4f1i(temp,i);
-        }
-    }
+hit_record Sphere::GetIntersection(const ray& r) const {
+  hit_record hit_record;
+  hit_record.material_id = -1;
+  hit_record.t = std::numeric_limits<float>::infinity();
 
-    return result;
+  vec3 oc = (r.origin() - center);
+
+  float a = dot(r.direction(),r.direction());
+  float b = 2*dot(r.direction(),(r.origin() - center));
+  float c = dot(oc,oc) - (radius * radius);
+
+  float delta = (b*b) - (4*a*c);
+
+  if(delta < 0){
+      return hit_record;
+  }
+
+  else{
+      float t1 = ((-1)*b + sqrt(delta))/(2*a);
+      float t2 = ((-1)*b - sqrt(delta))/(2*a);
+
+      hit_record.t = fmin(t1, t2);
+      hit_record.material_id = material_id;
+      hit_record.normal = getnormal(hit_record.t, r);
+      hit_record.obj = this;
+
+      return hit_record;
+  }
 };
 
-//Need to be decided about the implementation
-bool is_object_between(const vec3 &ray_origin, const vec3& light_position, const std::vector<Mesh>& meshes, const std::vector<Triangle>& triangles, const std::vector<Sphere>& spheres,const float& sre ){
-    int number_of_spheres = spheres.size();
-    int number_of_triangles = triangles.size();
-    int number_of_meshes = meshes.size();
+void Sphere::Initialize() {
+  const vec3 rad_vec = vec3(radius, radius, radius);
+  const vec3 min_c = center - rad_vec;
+  const vec3 max_c = center + rad_vec;
+  bounding_box.min_corner = min_c;
+  bounding_box.max_corner = max_c;
+};
 
-    //ProfileScope scope("is_object_between");
+void Face::CalculateNormal() {
 
-    ray r(ray_origin,light_position-ray_origin);
+      ba = v0_vector - v1_vector;
+      ca = v0_vector - v2_vector;
 
-    for(int s=0; s < number_of_spheres; s++){ // Check intersections with spheres.
-        Vec4f temp = Sphere::hit_sphere(r,spheres[s]);
-        if((temp.w > sre) && (temp.w < 1)){return true;}
-    }
-    for(int t=0; t<number_of_triangles; t++){ // // Check intersections with triangles.
-        Vec4f temp = Triangle::hit_triangle(r,triangles[t]);
-        if((temp.w > sre) && (temp.w < 1)){return true;}
-    }
-    for(int m=0; m<number_of_meshes; m++){ // Check intersections with meshes.
-        Vec4f1i temp = Mesh::hit_mesh(r,meshes[m]);
-        if((temp.w > sre) && (temp.w < 1)){return true;}
-    }
+      normal = unit_vector(cross(ba,ca));
 
-    return false;
+      vec3 min_c = v0_vector;
+      vec3 max_c = v0_vector;
+
+      min_c.x = fmin(min_c.x, v1_vector.x);
+      min_c.y = fmin(min_c.y, v1_vector.y);
+      min_c.z = fmin(min_c.z, v1_vector.z);
+
+      max_c.x = fmax(max_c.x, v1_vector.x);
+      max_c.y = fmax(max_c.y, v1_vector.y);
+      max_c.z = fmax(max_c.z, v1_vector.z);
+
+      min_c.x = fmin(min_c.x, v2_vector.x);
+      min_c.y = fmin(min_c.y, v2_vector.y);
+      min_c.z = fmin(min_c.z, v2_vector.z);
+
+      max_c.x = fmax(max_c.x, v2_vector.x);
+      max_c.y = fmax(max_c.y, v2_vector.y);
+      max_c.z = fmax(max_c.z, v2_vector.z);
+      bounding_box.min_corner = min_c;
+      bounding_box.max_corner = max_c;
 };

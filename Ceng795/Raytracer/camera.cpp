@@ -46,7 +46,7 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted) {
 };
 
 vec3 reflect(const vec3& v, const vec3& n) {
-     return v - 2*dot(v,n)*n;
+     return unit_vector(v - 2*dot(v,n)*n);
 };
 
 float schlick(float cosine, float ref_idx) {
