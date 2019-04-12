@@ -10,6 +10,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+int clamp(int rgb) { return ((rgb > 255) ? 255 : rgb);}
+
 void initialize(const std::string& filepath){
 
   SceneRenderer scene_renderer(filepath.c_str());
@@ -32,9 +34,9 @@ void initialize(const std::string& filepath){
    for (int i = 0; i < width; i++) {
      for (int j = 0; j < height; j++) {
        const Vec3i pixel = pixels[i * height + j];
-       image[idx++] = pixel.x;
-       image[idx++] = pixel.y;
-       image[idx++] = pixel.z;
+       image[idx++] = clamp(pixel.x);
+       image[idx++] = clamp(pixel.y);
+       image[idx++] = clamp(pixel.z);
      }
    }
 
