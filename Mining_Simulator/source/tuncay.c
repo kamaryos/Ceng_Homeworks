@@ -1,7 +1,4 @@
-#include "writeOutput.h"
-#include <unistd.h>
-#include <stdlib.h>
-
+#include "tuncay.h"
 
 int main(int argc, char *argv[]){
 
@@ -87,7 +84,8 @@ int main(int argc, char *argv[]){
     FillFoundryInfo(foundries[i],ID,capacity,1,1,0);
   }
 
-  int b = 0;
+  // Starting from here start the implementation of mining simulation
+  
 
   return 0;
 
