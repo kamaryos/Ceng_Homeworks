@@ -3,6 +3,8 @@
 int main(int argc, char *argv[]){
 
 
+  // Waiting count may change in reverse order
+
 
   // Reading the inputs from the standart input and filling the buffers according to it.
   char buf[10];
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]){
     unsigned int oreIndex  = strtoul(buf,NULL,0);
     OreType oreType = oreIndex;
     smelters[i] = (SmelterInfo*)malloc(sizeof(SmelterInfo));
-    FillSmelterInfo(smelters[i],ID,oreType,capacity,2,0);
+    FillSmelterInfo(smelters[i],ID,oreType,capacity,0,0);
   }
 
   //Foundries information is added to the buffers.
@@ -81,11 +83,12 @@ int main(int argc, char *argv[]){
     read(0,buf,2);
     unsigned int capacity = strtoul(buf,NULL,0);
     foundries[i] = (FoundryInfo*)malloc(sizeof(FoundryInfo));
-    FillFoundryInfo(foundries[i],ID,capacity,1,1,0);
+    FillFoundryInfo(foundries[i],ID,capacity,0,0,0);
   }
 
   // Starting from here start the implementation of mining simulation
-  
+
+
 
   return 0;
 

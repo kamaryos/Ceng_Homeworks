@@ -13,10 +13,14 @@ void UpdateSmelterCounts(SmelterInfo *smelterInfo, unsigned int waiting_ore_coun
   smelterInfo->total_produce = produced_ingot_count;
 }
 
-void UpdateFoundryCounts(FoundryInfo *foundryInfo, unsigned int waiting_coal, unsigned int waiting_iron, unsigned int produced_ingot_count){
-  foundryInfo->waiting_coal = waiting_coal;
+void UpdateFoundryCounts(FoundryInfo *foundryInfo, unsigned int waiting_iron, unsigned int waiting_coal, unsigned int produced_ingot_count){
   foundryInfo->waiting_iron = waiting_iron;
+  foundryInfo->waiting_coal = waiting_coal;
   foundryInfo->total_produce = produced_ingot_count;
+}
+
+void UpdateTransporterOre(TransporterInfo *transporterInfo,OreType *carry){
+  transporterInfo->carry = carry;
 }
 
 void main_miner_routine(MinerInfo* minerInfo,unsigned int mine_resource, unsigned int miner_time){
@@ -92,12 +96,12 @@ void main_foundry_routine(FoundryInfo* foundryInfo, unsigned int foundry_time){
     if(smelterInfo->waiting_iron == 0 && smelterInfo->waiting_coal == 0 ){
       waiting_iron -= 1;
       waiting_coal -= 1;
-      UpdateFoundryCounts(foundryInfo,waiting_coal,waiting_iron,produced_ingot_count);
+      UpdateFoundryCounts(foundryInfo,waiting_iron,waiting_coal,produced_ingot_count);
       WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_STARTED);
       //Sleep a value in range of I_m
       produced_ingot_count += 1 ;
       // signal that foundry is produced
-      UpdateFoundryCounts(foundryInfo,waiting_coal,waiting_iron,produced_ingot_count);
+      UpdateFoundryCounts(foundryInfo,waiting_iron,waiting_coal,produced_ingot_count);
       WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_FINISHED);
     }
     else{
@@ -106,6 +110,74 @@ void main_foundry_routine(FoundryInfo* foundryInfo, unsigned int foundry_time){
     }
   }
   //Foundry stopped signal!!
-  UpdateFoundryCounts(foundryInfo,waiting_coal,waiting_iron,produced_ingot_count);
+  UpdateFoundryCounts(foundryInfo,waiting_iron,waiting_coal,produced_ingot_count);
   WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_STOPPED);
+}
+
+void trasnporter_main_routine(TransporterInfo* transporterInfo,unsigned int transport_times,MinerInfo** miners,
+  SmelterInfo** smelters,FoundryInfo** foundries, unsigned int number_of_mine){
+
+
+    OreType *carriedOre = NULL;
+    UpdateTransporterOre(transporterInfo,carriedOre);
+    WriteOutput(NULL,transporterInfo,NULL,NULL,TRANSPORTER_CREATED);
+
+
+    while(){ // check whether there are active miners or have mine in their storage
+      carriedOre = NULL;
+      //Wait miners next load
+      //Transporter miner routine
+      //Wait producer
+      //Do the routine according to it
+    }
+
+    FillTransporterInfo(transporterInfo,carriedOre);
+    WriteOutput(NULL,transporterInfo,NULL,NULL,TRANSPORTER_STOPPED);
+}
+
+void transporter_miner_routine(MinerInfo* minerInfo, TransporterInfo* transpoterInfo,unsigned int transport_times ){
+
+  OreType *carriedOre = NULL;
+  const unsigned int I_m = transport_time;
+  WriteOutput(minerInfo,transporterInfo,NULL,NULL,TRANSPORTER_TRAVEL);
+  //Sleep in a range I_m
+  minerInfo->current_count -= 1;
+  carriedOre = minerInfo->oreType;
+  UpdateMinerCurrentCount(miner,minerInfo->current_count);
+  UpdateTransporterOre(transporterInfo,carriedOre);
+  WriteOutput(minerInfo,transporterInfo,NULL,NULL,TRANSPORTER_TAKE_ORE);
+  //Sleep in a range I_m
+  //Signal the miner that new storage is available
+
+}
+
+void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* transpoterInfo, unsigned int transport_time){
+
+  OreType *carriedOre =transporterInfo->carriedOre;
+  const unsigned int I_m = transport_time;
+  WriteOutput(NULL,transporterInfo,smelterInfo,NULL,TRANSPORTER_TRAVEL);
+  //Sleep a value in range main_miner_routine
+  smelterInfo->waiting_ore_count += 1;
+  UpdateSmelterCounts(smelterInfo,smelterInfo->waiting_ore_count,smelterInfo->total_produce);
+  UpdateTransporterOre(transpoterInfo,carriedOre);
+  WriteOutput(NULL,transpoterInfo,smelterInfo,NULL,TRANSPORTER_DROP_ORE);
+  //Sleep in a range I_m
+  //Signal that is dropped to its storage
+
+}
+
+void transporter_foundry_routine(FoundryInfo* foundryInfo,TransporterInfo* transpoterInfo, unsigned int transporter_time){
+
+  OreType *carriedOre =transporterInfo->carriedOre;
+  const unsigned int I_m = transport_time;
+  WriteOutput(NULL,transporterInfo,NULL,foundryInfo,TRANSPORTER_TRAVEL);
+  //Sleep a value in range main_miner_routine
+  if(carriedOre == IRON) foundryInfo->waiting_iron += 1;
+  else foundryInfo->waiting_coal += 1;
+  UpdateFoundryCounts(foundryInfo,foundryInfo->waiting_iron,foundryInfo->waiting_coal,foundryInfo->produced_ingot_count);
+  UpdateTransporterOre(transpoterInfo,carriedOre);
+  WriteOutput(NULL,transporterInfo,NULL,foundryInfo,TRANSPORTER_DROP_ORE);
+  //Sleep in a range I_m
+  //Signal that is dropped to its storage
+
 }
