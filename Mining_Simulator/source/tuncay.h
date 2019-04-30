@@ -22,3 +22,30 @@ void UpdateFoundryCounts(FoundryInfo *foundryInfo, unsigned int waiting_iron, un
 void UpdateTransporterOre(TransporterInfo *transporterInfo,OreType *carry){
   transporterInfo->carry = carry;
 }
+
+typedef struct MinerArgs {
+    MinerInfo* minerInfo;
+    unsigned int mine_resource;
+    unsigned int miner_time;
+} MinerArgs;
+
+typedef struct TransporterArgs {
+  TransporterInfo* transporterInfo;
+  MinerInfo** miners;
+  SmelterInfo** smelters;
+  FoundryInfo** foundries;
+  unsigned int* miner_status;
+  unsigned int transport_time;
+  unsigned int number_of_mine;
+} TransporterArgs;
+
+typedef struct SmelterArgs {
+  SmelterInfo* smelterInfo;
+  unsigned int smelter_time;
+} SmelterArgs;
+
+typedef struct FoundryArgs {
+  FoundryInfo* foundryInfo;
+  unsigned int foundry_time;
+
+} FoundryArgs;
