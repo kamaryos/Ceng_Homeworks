@@ -37,6 +37,8 @@ typedef struct TransporterArgs {
   unsigned int* miner_status;
   unsigned int transport_time;
   unsigned int number_of_mine;
+  unsigned int number_of_smelters;
+  unsigned int number_of_foundries;
 } TransporterArgs;
 
 typedef struct SmelterArgs {
@@ -49,3 +51,17 @@ typedef struct FoundryArgs {
   unsigned int foundry_time;
 
 } FoundryArgs;
+
+typedef struct SmelterWaitingArgs {
+  SmelterInfo** smelters;
+  unsigned int number_of_smelters;
+  OreType* oreType;
+  unsigned int* index;
+} SmelterWaitingArgs;
+
+typedef struct FoundryWaitingArgs {
+  FoundryInfo** foundries;
+  unsigned int number_of_foundries;
+  OreType* oreType;
+  unsigned int* index;
+} FoundryWaitingArgs;
