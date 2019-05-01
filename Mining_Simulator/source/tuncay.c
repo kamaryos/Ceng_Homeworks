@@ -40,6 +40,23 @@ unsigned int any_active_miners(unsigned int number_of_mine,unsigned int * miner_
 	return 0x00;
 }
 
+unsigned int any_active_smelters(unsigned int number_of_smelters, unsigned int* smelter_status){
+
+	for(int i = 0; i<number_of_smelters; i++){
+		if(smelter_status[i] == 0x01) return 0x01;
+	}
+	return 0x00;
+}
+
+unsigned int any_active_foundries(unsigned int number_of_foundries, unsigned int* foundry_status){
+
+		for(int i = 0; i<number_of_foundries; i++){
+			if(foundry_status[i] == 0x01) return 0x01;
+		}
+		return 0x00;
+
+}
+
 // Find and return the next miner to go for transporter
 MinerInfo* WaitingForNextLoad(unsigned int* kth,unsigned int number_of_mine,MinerInfo** minerInfos) {
 	for(int i = *kth; i < number_of_mine; i++)
@@ -66,14 +83,17 @@ MinerInfo* WaitingForNextLoad(unsigned int* kth,unsigned int number_of_mine,Mine
 	return WaitingForNextLoad(kth,number_of_mine,minerInfos);
 }
 
-SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to go for transporter
-{
+SmelterInfo* first_round_smelter(void *ptr){
+
 	SmelterWaitingArgs *args = ptr;
 
 	SmelterInfo** smelters = (SmelterInfo**)args->smelters;
 	unsigned int number_of_smelters = (unsigned int)args->number_of_smelters;
 	OreType* oreType = (OreType*)args->oreType;
 	unsigned int* index = (unsigned int*)args->index;
+
+
+
 	for(int i = 0; i < number_of_smelters; i++)
 	{
 		if(smelters[i]->waiting_ore_count == 1 && smelters[i]->oreType == *oreType)
@@ -82,6 +102,20 @@ SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to g
 			return smelters[i];
 		}
 	}
+
+	return NULL;
+
+}
+
+SmelterInfo* second_round_smelter(void *ptr){
+
+	SmelterWaitingArgs *args = ptr;
+
+	SmelterInfo** smelters = (SmelterInfo**)args->smelters;
+	unsigned int number_of_smelters = (unsigned int)args->number_of_smelters;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
 	for(int i = 0; i < number_of_smelters; i++)
 	{
 		if(smelters[i]->waiting_ore_count == 0 && smelters[i]->oreType == *oreType)
@@ -90,6 +124,21 @@ SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to g
 			return smelters[i];
 		}
 	}
+
+	return NULL;
+
+}
+
+SmelterInfo* third_round_smelter(void *ptr){
+
+	SmelterWaitingArgs *args = ptr;
+
+	SmelterInfo** smelters = (SmelterInfo**)args->smelters;
+	unsigned int number_of_smelters = (unsigned int)args->number_of_smelters;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
+
 	for(int i = 0; i < number_of_smelters; i++)
 	{
 		if(smelters[i]->waiting_ore_count < smelters[i]->loading_capacity && smelters[i]->oreType == *oreType)
@@ -99,11 +148,106 @@ SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to g
 		}
 	}
 
+	return NULL;
+
+}
+
+
+
+SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to go for transporter
+{
+
+	SmelterWaitingArgs *args = ptr;
+
+	SmelterInfo** smelters = (SmelterInfo**)args->smelters;
+	unsigned int number_of_smelters = (unsigned int)args->number_of_smelters;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
+	SmelterInfo* result = NULL;
+
+	result = first_round_smelter(args);
+	if(result != NULL) return result;
+	result = second_round_smelter(args);
+	if(result != NULL) return result;
+	result = third_round_smelter(args);
+	if(result != NULL) return result;
+
 	pthread_mutex_lock(&mutex);
 	pthread_cond_wait(&cvSmelterTransporter,&mutex);
 	args->index = index;
 	return FindNextSmelter(args);
 }
+
+FoundryInfo* first_round_foundry(void *ptr){
+
+	FoundryWaitingArgs *args = ptr;
+
+	FoundryInfo** foundries = (FoundryInfo**)args->foundries;
+	unsigned int number_of_foundries = (unsigned int)args->number_of_foundries;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
+	for(int i = 0; i < number_of_foundries; i++)
+	{
+		if(foundries[i]->waiting_iron == 0 && foundries[i]->waiting_coal == 1)
+		{
+			*index = i;
+			return foundries[i];
+		}
+	}
+
+	return NULL;
+}
+
+FoundryInfo* second_round_foundry(void *ptr){
+
+	FoundryWaitingArgs *args = ptr;
+
+	FoundryInfo** foundries = (FoundryInfo**)args->foundries;
+	unsigned int number_of_foundries = (unsigned int)args->number_of_foundries;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
+
+	for(int i = 0; i < number_of_foundries; i++)
+	{
+		if(foundries[i]->waiting_iron == 0 && foundries[i]->waiting_coal == 0)
+		{
+			*index = i;
+			return foundries[i];
+		}
+	}
+
+	return NULL;
+
+
+}
+
+
+FoundryInfo* third_round_foundry(void* ptr){
+
+	FoundryWaitingArgs *args = ptr;
+
+	FoundryInfo** foundries = (FoundryInfo**)args->foundries;
+	unsigned int number_of_foundries = (unsigned int)args->number_of_foundries;
+	OreType* oreType = (OreType*)args->oreType;
+	unsigned int* index = (unsigned int*)args->index;
+
+
+	for(int i = 0; i < number_of_foundries; i++)
+	{
+		if((foundries[i]->waiting_iron + foundries[i]->waiting_coal) < foundries[i]->loading_capacity)
+		{
+			*index = i;
+			return foundries[i];
+		}
+	}
+
+	return NULL;
+
+}
+
 
 FoundryInfo* FindNextFoundry(void *ptr){
 
@@ -122,23 +266,13 @@ FoundryInfo* FindNextFoundry(void *ptr){
 			return foundries[i];
 		}
 	}
-	for(int i = 0; i < number_of_foundries; i++)
-	{
-		if(foundries[i]->waiting_iron == 0 && foundries[i]->waiting_coal == 0)
-		{
-			*index = i;
-			return foundries[i];
-		}
-	}
-	// 3) Check for any foundry that is not full.
-	for(int i = 0; i < number_of_foundries; i++)
-	{
-		if((foundries[i]->waiting_iron + foundries[i]->waiting_coal) < foundries[i]->loading_capacity)
-		{
-			*index = i;
-			return foundries[i];
-		}
-	}
+
+	FoundryInfo* result = NULL;
+
+	result = second_round_foundry(args);
+	if(result != NULL) return result;
+	result = third_round_foundry(args);
+	if(result != NULL) return result;
 
 	pthread_mutex_lock(&mutex);
 	pthread_cond_wait(&cvFoundryTransporter,&mutex);
@@ -153,7 +287,7 @@ void *main_miner_routine(void *ptr){
 
   MinerInfo* minerInfo = (MinerInfo*)args->minerInfo;
   unsigned int mine_resource = (unsigned int)args->mine_resource;
-  const unsigned int I_m = (unsigned int)args->miner_time;
+  const int I_m = (int)args->miner_time;
 
 
   const unsigned int index = (minerInfo->ID) - 1;
@@ -170,7 +304,7 @@ void *main_miner_routine(void *ptr){
     //WaitCanProduce();
     FillMinerInfo(minerInfo,minerInfo->ID,minerInfo->oreType,minerInfo->capacity,minerInfo->current_count);
     WriteOutput(minerInfo,NULL,NULL,NULL,MINER_STARTED);
-    usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+    usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
     pthread_mutex_trylock(&minerMutexes[index]);
     minerInfo->current_count +=1;
     mine_resource -= 1;
@@ -179,7 +313,7 @@ void *main_miner_routine(void *ptr){
     WriteOutput(minerInfo,NULL,NULL,NULL,MINER_FINISHED);
     pthread_mutex_unlock(&minerMutexes[index]);
     //Sleep in interval using I_m
-    usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+    usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
 
   }
   FillMinerInfo(minerInfo,minerInfo->ID,minerInfo->oreType,minerInfo->capacity,minerInfo->current_count); // Update the miner with 0 current count
@@ -198,7 +332,7 @@ void *main_smelter_routine(void *ptr){
 
 	const unsigned int ID = (smelterInfo->ID)-1;
 
-  const unsigned int I_m = (unsigned int)args->smelter_time;
+  const int I_m = (int)args->smelter_time;
 
   WriteOutput(NULL,NULL,smelterInfo,NULL,SMELTER_STARTED);
   clock_t start,end,t;
@@ -209,7 +343,7 @@ void *main_smelter_routine(void *ptr){
 			smelterInfo->waiting_ore_count -= 2;
       UpdateSmelterCounts(smelterInfo,smelterInfo->waiting_ore_count,smelterInfo->total_produce);
       WriteOutput(NULL,NULL,smelterInfo,NULL,SMELTER_STARTED);
-			usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+			usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
 
 			// Do the work and sleep with I_m
       smelterInfo->total_produce += 1 ;
@@ -239,7 +373,7 @@ void *main_foundry_routine(void* ptr){
 	FoundryInfo* foundryInfo = (FoundryInfo*)args->foundryInfo;
 
 	const unsigned int ID = (foundryInfo->ID)-1;
-  const unsigned int I_m = (unsigned int)args->foundry_time;
+  const int I_m = (int)args->foundry_time;
   //UpdateFoundryCounts(foundryInfo,waiting_coal,waiting_iron,produced_ingot_count);
   WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_CREATED);
   clock_t start,end,t;
@@ -253,7 +387,7 @@ void *main_foundry_routine(void* ptr){
       WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_STARTED);
 			pthread_mutex_unlock(&foundryMutexes[ID]);
 			//Sleep a value in range of I_m
-			usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+			usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
       foundryInfo->total_produce += 1 ;
       // signal that foundry is produced
 			pthread_cond_broadcast(&cvFoundryTransporter);
@@ -298,8 +432,9 @@ void transporter_miner_routine(MinerInfo* minerInfo, TransporterInfo* transporte
 
 
 
-void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* transporterInfo, unsigned int transport_time, unsigned int kth){
+void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* transporterInfo, unsigned int transport_time, unsigned int* index){
 
+	unsigned int kth = *index;
 	SmelterInfo* tempSmelterInfo = (SmelterInfo*)malloc(sizeof(SmelterInfo));
   const unsigned int I_m = transport_time;
 	FillSmelterInfo(tempSmelterInfo,smelterInfo->ID,IRON,0,0,0);
@@ -321,24 +456,24 @@ void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* trans
 
 }
 
-void transporter_foundry_routine(FoundryInfo* foundryInfo,TransporterInfo* transporterInfo, unsigned int transporter_time, unsigned int kth){
+void transporter_foundry_routine(FoundryInfo* foundryInfo,TransporterInfo* transporterInfo, int transporter_time, unsigned int* index){
 
-  const unsigned int I_m = transporter_time;
+	unsigned int kth = *index;
+  const int I_m = transporter_time;
 	FoundryInfo* tempFoundryInfo = (FoundryInfo*)malloc(sizeof(FoundryInfo));
 	FillFoundryInfo(tempFoundryInfo,foundryInfo->ID,0,0,0,0);
 	FillTransporterInfo(transporterInfo,transporterInfo->ID,transporterInfo->carry);
   WriteOutput(NULL,transporterInfo,NULL,foundryInfo,TRANSPORTER_TRAVEL);
   //Sleep a value in range main_miner_routine
-	usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+	usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
 	pthread_mutex_lock(&foundryMutexes[kth]);
   if(ToString(*(transporterInfo->carry) == IRON)) foundryInfo->waiting_iron += 1;
   else foundryInfo->waiting_coal += 1;
-  UpdateFoundryCounts(foundryInfo,foundryInfo->waiting_iron,foundryInfo->waiting_coal,foundryInfo->total_produce);
-  UpdateTransporterOre(transporterInfo,transporterInfo->carry);
+
   WriteOutput(NULL,transporterInfo,NULL,foundryInfo,TRANSPORTER_DROP_ORE);
 	pthread_mutex_unlock(&foundryMutexes[kth]);
   //Sleep in a range I_m
-	usleep(I_m - (I_m*0.01) + (rand()%(unsigned int)(I_m*0.02)));
+	usleep(I_m - (I_m*0.01) + (rand()%(int)(I_m*0.02)));
   //Signal that is dropped to its storage
 	pthread_cond_broadcast(&cvTransporterFoundry);
 
@@ -357,11 +492,13 @@ void *main_transporter_routine(void *ptr){
 		unsigned int number_of_smelters = (unsigned int)args->number_of_smelters;
 		unsigned int number_of_foundries = (unsigned int)args->number_of_foundries;
 
-    const unsigned int I_m = (unsigned int)args->transport_time;
+    const int I_m = (int)args->transport_time;
 
     unsigned int* miner_status = (unsigned int*)args->miner_status;
+		unsigned int* smelter_status = (unsigned int*)args->smelter_status;
+		unsigned int* foundry_status = (unsigned int*)args->foundry_status;
 
-    unsigned int kth = 0x01;
+    unsigned int kth = 0x00;
 
     FillTransporterInfo(transporterInfo,transporterInfo->ID,transporterInfo->carry);
     WriteOutput(NULL,transporterInfo,NULL,NULL,TRANSPORTER_CREATED);
@@ -393,7 +530,7 @@ void *main_transporter_routine(void *ptr){
 				arg_smelter.oreType = transporterInfo->carry;
 				arg_smelter.index = &index;
 				SmelterInfo* smelter_next = FindNextSmelter(&arg_smelter);
-				transporter_smelter_routine(smelter_next,transporterInfo,I_m,index);
+				transporter_smelter_routine(smelter_next,transporterInfo,I_m,&index);
       }
       else if(ToString(*(transporterInfo->carry)) == "Coals"){
         //Wait next foundry
@@ -405,19 +542,94 @@ void *main_transporter_routine(void *ptr){
 				arg_foundry.oreType = transporterInfo->carry;
 				arg_foundry.index = &index;
 				FoundryInfo* foundry_next = FindNextFoundry(&arg_foundry);
+				transporter_foundry_routine(foundry_next,transporterInfo,I_m,&index);
       }
       else if(ToString(*(transporterInfo->carry)) == "Iron"){
 
+
+				SmelterWaitingArgs arg_smelter;
+				FoundryWaitingArgs arg_foundry;
+
+				arg_smelter.smelters = smelters;
+				arg_smelter.number_of_smelters = number_of_smelters;
+
+				arg_foundry.foundries = foundries;
+				arg_foundry.number_of_foundries = number_of_foundries;
+
+
+				while((any_active_smelters(number_of_smelters,smelter_status) == 0x01)
+				|| (any_active_foundries(number_of_foundries,foundry_status) == 0x01)){
+
+					SmelterInfo* smelter_next = NULL;
+					FoundryInfo* foundry_next = NULL;
+
+					unsigned int index = 0;
+
+					arg_smelter.index = &index;
+					arg_smelter.oreType = transporterInfo->carry;
+					smelter_next = first_round_smelter(&arg_smelter);
+					if(smelter_next != NULL){
+						transporter_smelter_routine(smelter_next,transporterInfo,I_m,&index);
+						break;
+					}
+					arg_foundry.index = &index;
+					arg_foundry.oreType = transporterInfo->carry;
+					foundry_next = first_round_foundry(&arg_foundry);
+					if(foundry_next != NULL){
+						transporter_foundry_routine(foundry_next,transporterInfo,I_m,&index);
+						break;
+					}
+					arg_smelter.index = &index;
+					arg_smelter.oreType = transporterInfo->carry;
+					smelter_next = second_round_smelter(&arg_smelter);
+					if(smelter_next != NULL){
+						transporter_smelter_routine(smelter_next,transporterInfo,I_m,&index);
+						break;
+					}
+
+					arg_foundry.index = &index;
+					arg_foundry.oreType = transporterInfo->carry;
+					foundry_next = second_round_foundry(&arg_foundry);
+					if(foundry_next != NULL){
+						transporter_foundry_routine(foundry_next,transporterInfo,I_m,&index);
+						break;
+					}
+
+					arg_smelter.index = &index;
+					arg_smelter.oreType = transporterInfo->carry;
+					smelter_next = third_round_smelter(&arg_smelter);
+					if(smelter_next != NULL){
+						transporter_smelter_routine(smelter_next,transporterInfo,I_m,&index);
+						break;
+					}
+
+					arg_foundry.index = &index;
+					arg_foundry.oreType = transporterInfo->carry;
+					foundry_next = third_round_foundry(&arg_foundry);
+					if(foundry_next != NULL){
+						transporter_foundry_routine(foundry_next,transporterInfo,I_m,&index);
+						break;
+					}
+
+					if((any_active_smelters(number_of_smelters,smelter_status) == 0x01)){
+						pthread_mutex_lock(&mutex);
+						pthread_cond_wait(&cvSmelterTransporter,&mutex);
+					}
+					else if((any_active_foundries(number_of_foundries,foundry_status) == 0x01)){
+						pthread_mutex_lock(&mutex);
+						pthread_cond_wait(&cvSmelterTransporter,&mutex);
+					}
+
+
+
+				}
       }
-      //Do the routine according to it
+			kth += 1;
     }
 
     UpdateTransporterOre(transporterInfo,transporterInfo->carry);
     WriteOutput(NULL,transporterInfo,NULL,NULL,TRANSPORTER_STOPPED);
 }
-
-
-
 
 
 
@@ -428,87 +640,90 @@ int main(int argc, char *argv[]){
 
 
   // Reading the inputs from the standart input and filling the buffers according to it.
-  char buf[10];
-  read(0,buf,2);
+	unsigned int number_of_mine;
+  scanf("%u",&number_of_mine);
 
   // Miner and mine resource filling
-  unsigned int number_of_mine = strtoul(buf,NULL,3);
-  printf("%u \n",number_of_mine);
+
 
   MinerInfo* miners[number_of_mine];
-  unsigned int miner_times[number_of_mine];
+  int miner_times[number_of_mine];
   unsigned int mine_resource[number_of_mine];
   unsigned int miner_status[number_of_mine];
   minerMutexes = (pthread_mutex_t*)malloc(number_of_mine*sizeof(pthread_mutex_t));
 
   for(int i = 0 ; i < number_of_mine ; i++){
     unsigned int ID = i+1;
-    read(0,buf,2);
-    miner_times[i] = strtoul(buf,NULL,0);
-    read(0,buf,2);
-    unsigned int capacity = strtoul(buf,NULL,0);
-    read(0,buf,2);
-    unsigned int oreIndex  = strtoul(buf,NULL,0);
+
+    unsigned int capacity ;
+		unsigned int oreIndex ;
+
+		scanf("%d %d %d %d",&miner_times[i],&capacity,&oreIndex,&mine_resource[i]);
+
     OreType oreType = oreIndex;
     miners[i] = (MinerInfo*)malloc(sizeof(MinerInfo));
     FillMinerInfo(miners[i],ID,oreType,capacity,0x00);
-    read(0,buf,2);
-    mine_resource[i] = strtoul(buf,NULL,0);
+
   }
 
   //Transporter information is added to the buffers.
-  read(0,buf,2);
-  unsigned int number_of_transporters = strtoul(buf,NULL,0);
+  unsigned int number_of_transporters;
+
+  scanf("%u",&number_of_transporters);
 
   TransporterInfo* transporters[number_of_transporters];
-  unsigned int transport_times[number_of_transporters];
+  int transport_times[number_of_transporters];
   unsigned int transporter_status[number_of_transporters];
 
   for(int i = 0 ; i < number_of_transporters ; i++){
     unsigned int ID = i+1;
-    read(0,buf,2);
-    transport_times[i] = strtoul(buf,NULL,0);
-    transporters[i] = (TransporterInfo*)malloc(sizeof(TransporterInfo));
-    FillTransporterInfo(transporters[i],ID,NULL);
+
+		scanf("%d",&transport_times[i]);
+
+		transporters[i] = (TransporterInfo*)malloc(sizeof(TransporterInfo));
+
+		FillTransporterInfo(transporters[i],ID,NULL);
   }
 
   //Smelter information is added to the buffers.
-  read(0,buf,2);
-  unsigned int number_of_smelters = strtoul(buf,NULL,0);
+
+  unsigned int number_of_smelters;
+	scanf("%u",&number_of_smelters);
 
   SmelterInfo* smelters[number_of_smelters];
-  unsigned int smelter_times[number_of_smelters];
+  int smelter_times[number_of_smelters];
   unsigned int smelter_status[number_of_smelters];
 	smelterMutexes = (pthread_mutex_t*)malloc(number_of_smelters*sizeof(pthread_mutex_t));
 
   for(int i = 0 ; i < number_of_smelters ; i++){
     unsigned int ID = i+1;
-    read(0,buf,2);
-    smelter_times[i] = strtoul(buf,NULL,0);
-    read(0,buf,2);
-    unsigned int capacity = strtoul(buf,NULL,0);
-    read(0,buf,2);
-    unsigned int oreIndex  = strtoul(buf,NULL,0);
+
+		unsigned int capacity ;
+		unsigned int oreIndex ;
+
+		scanf("%d %u %u",&smelter_times[i],&capacity,&oreIndex);
+
     OreType oreType = oreIndex;
     smelters[i] = (SmelterInfo*)malloc(sizeof(SmelterInfo));
     FillSmelterInfo(smelters[i],ID,oreType,capacity,0,0);
   }
 
   //Foundries information is added to the buffers.
-  read(0,buf,2);
-  unsigned int number_of_foundries = strtoul(buf,NULL,0);
+
+  unsigned int number_of_foundries;
+	scanf("%u",&number_of_foundries);
 
   FoundryInfo* foundries[number_of_foundries];
-  unsigned int foundry_times[number_of_foundries];
+  int foundry_times[number_of_foundries];
   unsigned int foundry_status[number_of_foundries];
 	foundryMutexes = (pthread_mutex_t*)malloc(number_of_foundries*sizeof(pthread_mutex_t));
 
   for(int i = 0 ; i < number_of_foundries ; i++){
     unsigned int ID = i+1;
-    read(0,buf,2);
-    foundry_times[i] = strtoul(buf,NULL,0);
-    read(0,buf,2);
-    unsigned int capacity = strtoul(buf,NULL,0);
+		unsigned int capacity;
+
+		scanf("%d %u",&foundry_times[i],&capacity);
+
     foundries[i] = (FoundryInfo*)malloc(sizeof(FoundryInfo));
     FillFoundryInfo(foundries[i],ID,capacity,0,0,0);
   }
@@ -565,6 +780,8 @@ int main(int argc, char *argv[]){
 		args.number_of_smelters = number_of_smelters;
 		args.number_of_foundries = number_of_foundries;
     args.miner_status = miner_status;
+		args.smelter_status = smelter_status;
+		args.foundry_status = foundry_status;
     InitWriteOutput();
     pthread_create(&transporter_tid[i],NULL,main_transporter_routine,(void *) &args);
   }

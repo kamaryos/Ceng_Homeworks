@@ -26,7 +26,7 @@ void UpdateTransporterOre(TransporterInfo *transporterInfo,OreType *carry){
 typedef struct MinerArgs {
     MinerInfo* minerInfo;
     unsigned int mine_resource;
-    unsigned int miner_time;
+    int miner_time;
 } MinerArgs;
 
 typedef struct TransporterArgs {
@@ -35,7 +35,9 @@ typedef struct TransporterArgs {
   SmelterInfo** smelters;
   FoundryInfo** foundries;
   unsigned int* miner_status;
-  unsigned int transport_time;
+  unsigned int* smelter_status;
+  unsigned int* foundry_status;
+  int transport_time;
   unsigned int number_of_mine;
   unsigned int number_of_smelters;
   unsigned int number_of_foundries;
@@ -43,13 +45,12 @@ typedef struct TransporterArgs {
 
 typedef struct SmelterArgs {
   SmelterInfo* smelterInfo;
-  unsigned int smelter_time;
+  int smelter_time;
 } SmelterArgs;
 
 typedef struct FoundryArgs {
   FoundryInfo* foundryInfo;
-  unsigned int foundry_time;
-
+  int foundry_time;
 } FoundryArgs;
 
 typedef struct SmelterWaitingArgs {
