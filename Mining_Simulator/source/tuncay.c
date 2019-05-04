@@ -4,9 +4,12 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-pthread_mutex_t minerInfo_locking = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; //Mutex for protecting critical region
 
+
+//In the below part, I am defining the necessary mutex structures and condition variables.
+
+//Condition Variables
+//These variables are used for the relationship between the transporter-producer and transporter-miner
 pthread_cond_t cvTransporterMiner = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cvMinerTransporter = PTHREAD_COND_INITIALIZER;
 
@@ -17,6 +20,11 @@ pthread_cond_t cvTransporterFoundry = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cvFoundryTransporter = PTHREAD_COND_INITIALIZER;
 
 
+//There are 2 main mutexes and 3 mutex array for the miners and producers.
+//These arrays have the size according to the numbers of their parts.
+
+pthread_mutex_t minerInfo_locking = PTHREAD_MUTEX_INITIALIZER; // Mutex For minerInfo
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; //Mutex for protecting critical region
 
 pthread_mutex_t* minerMutexes;
 pthread_mutex_t* smelterMutexes;
@@ -57,7 +65,7 @@ unsigned int any_active_foundries(unsigned int number_of_foundries, unsigned int
 
 }
 
-// Find and return the next miner to go for transporter
+// Finding the next available miner according to the index
 MinerInfo* WaitingForNextLoad(unsigned int* kth,unsigned int number_of_mine,MinerInfo** minerInfos) {
 	for(int i = *kth; i < number_of_mine; i++)
 	{
@@ -82,6 +90,8 @@ MinerInfo* WaitingForNextLoad(unsigned int* kth,unsigned int number_of_mine,Mine
 	}
 	return WaitingForNextLoad(kth,number_of_mine,minerInfos);
 }
+
+//There are 3 different cases needed to be checked in the smelters, so these three rounds represents them.
 
 SmelterInfo* first_round_smelter(void *ptr){
 
@@ -152,10 +162,9 @@ SmelterInfo* third_round_smelter(void *ptr){
 
 }
 
-
-
-SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to go for transporter
-{
+//All the above rounds are checked in this function for the case where there are no other choice as a producer
+//Where the oreType is Copper
+SmelterInfo* FindNextSmelter(void *ptr){
 
 	SmelterWaitingArgs *args = ptr;
 
@@ -178,6 +187,8 @@ SmelterInfo* FindNextSmelter(void *ptr) // Find and return the next smelter to g
 	args->index = index;
 	return FindNextSmelter(args);
 }
+
+//There are 3 different cases needed to be checked in the smelters, so these three rounds represents them.
 
 FoundryInfo* first_round_foundry(void *ptr){
 
@@ -224,7 +235,6 @@ FoundryInfo* second_round_foundry(void *ptr){
 
 }
 
-
 FoundryInfo* third_round_foundry(void* ptr){
 
 	FoundryWaitingArgs *args = ptr;
@@ -249,6 +259,8 @@ FoundryInfo* third_round_foundry(void* ptr){
 }
 
 
+//All the above rounds are checked in this function for the case where there are no other choice as a producer
+//Where the oreType is Coals
 FoundryInfo* FindNextFoundry(void *ptr){
 
 	FoundryWaitingArgs *args = ptr;
@@ -280,6 +292,7 @@ FoundryInfo* FindNextFoundry(void *ptr){
 	return FindNextFoundry(args);
 }
 
+//Main Miner routine where the ores are produced and gives signals to the transporter
 void *main_miner_routine(void *ptr){
   //This two line may be differ since I initialize the current_ore_count before sending here
 
@@ -319,9 +332,7 @@ void *main_miner_routine(void *ptr){
   FillMinerInfo(minerInfo,minerInfo->ID,minerInfo->oreType,minerInfo->capacity,minerInfo->current_count); // Update the miner with 0 current count
   WriteOutput(minerInfo,NULL,NULL,NULL,MINER_STOPPED);
 }
-
-
-
+//Main Smelter routine where the ingots are produced
 void *main_smelter_routine(void *ptr){
 
 
@@ -333,7 +344,7 @@ void *main_smelter_routine(void *ptr){
 	const unsigned int ID = (smelterInfo->ID)-1;
 
   const int I_m = (int)args->smelter_time;
-
+	UpdateSmelterCounts(smelterInfo,smelterInfo->waiting_ore_count,smelterInfo->total_produce);
   WriteOutput(NULL,NULL,smelterInfo,NULL,SMELTER_STARTED);
   clock_t start,end,t;
   start = clock();
@@ -364,7 +375,7 @@ void *main_smelter_routine(void *ptr){
   WriteOutput(NULL,NULL,smelterInfo,NULL,SMELTER_STOPPED);
 
 }
-
+//Main Foundry routine where the ingots are produced
 void *main_foundry_routine(void* ptr){
 
 
@@ -374,7 +385,7 @@ void *main_foundry_routine(void* ptr){
 
 	const unsigned int ID = (foundryInfo->ID)-1;
   const int I_m = (int)args->foundry_time;
-  //UpdateFoundryCounts(foundryInfo,waiting_coal,waiting_iron,produced_ingot_count);
+	UpdateFoundryCounts(foundryInfo,foundryInfo->waiting_iron,foundryInfo->waiting_coal,foundryInfo->total_produce);
   WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_CREATED);
   clock_t start,end,t;
   start = clock();
@@ -405,6 +416,8 @@ void *main_foundry_routine(void* ptr){
   WriteOutput(NULL,NULL,NULL,foundryInfo,FOUNDRY_STOPPED);
 }
 
+
+//Routine for transporter taking ore from Miner
 void transporter_miner_routine(MinerInfo* minerInfo, TransporterInfo* transporterInfo,unsigned int transport_time,unsigned int kth){
 
   MinerInfo* tempMinerInfo = (MinerInfo*)malloc(sizeof(MinerInfo));
@@ -431,7 +444,7 @@ void transporter_miner_routine(MinerInfo* minerInfo, TransporterInfo* transporte
 }
 
 
-
+//Routine for transporter dropped ore to the smelter
 void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* transporterInfo, unsigned int transport_time, unsigned int* index){
 
 	unsigned int kth = *index;
@@ -455,7 +468,7 @@ void transporter_smelter_routine(SmelterInfo* smelterInfo,TransporterInfo* trans
   //Signal that is dropped to its storage
 
 }
-
+//Routine for transporter dropped ore to the foundry
 void transporter_foundry_routine(FoundryInfo* foundryInfo,TransporterInfo* transporterInfo, int transporter_time, unsigned int* index){
 
 	unsigned int kth = *index;
@@ -479,7 +492,7 @@ void transporter_foundry_routine(FoundryInfo* foundryInfo,TransporterInfo* trans
 
 }
 
-
+//All transporter related routine
 void *main_transporter_routine(void *ptr){
 
     TransporterArgs* args = ptr;
