@@ -5,7 +5,7 @@
 ### 
 These projects are done by me and my partner in these lectures. 
 * [Unreliable Network Implementation in Python3 as Term Project Part-1](https://github.com/kamaryos/Ceng_Homeworks/tree/master/TP_Part1_02)
-* [Reliable and Multi-homed Network Implementation in Python3 as Term Project Part-2](https://github.com/kamaryos/Ceng_Homeworks/tree/master/TP_part2_02)
+* [Reliable and Multi-homed Network Implementation in Python3 as Term Project Part-2](https://github.com/kamaryos/Ceng_Homeworks/tree/master/Tp_part2_02)
 * [Simple Ray Tracer with C++](https://github.com/kamaryos/Ceng_Homeworks/tree/master/raytracer)
 * [Rasterization with C++](https://github.com/kamaryos/Ceng_Homeworks/tree/master/rasterizer)
 
